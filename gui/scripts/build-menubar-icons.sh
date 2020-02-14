@@ -10,19 +10,23 @@ MENUBAR_PATH="assets/images/menubar icons"
 MACOS="$MENUBAR_PATH/darwin"
 WINDOWS="$MENUBAR_PATH/win32"
 LINUX="$MENUBAR_PATH/linux"
+TMP="$MENUBAR_PATH/tmp"
 
-WINDOWS_SIZES="-define icon:auto-resize=48,32,16"
+WINDOWS_SIZES="-define icon:auto-resize=48,32,24,20,16"
 
 MAKE_BLACK='s/#[0-9a-fA-f]{6}/#000000/g'
 MAKE_WHITE='s/#[0-9a-fA-f]{6}/#FFFFFF/g'
 
 COMPRESSION_OPTIONS="-define png:compression-filter=5 -define png:compression-level=9 \
   -define png:compression-strategy=1 -define png:exclude-chunk=all -strip"
-OPTIONS="-background transparent -density 1200 $COMPRESSION_OPTIONS"
+OPTIONS="-background transparent -density 3200 -quality 100"
 
 function resize() {
-  WITHOUT_PADDING=$[$1 - ($2 * 2)]
-  echo "-resize ${WITHOUT_PADDING}x$WITHOUT_PADDING -gravity center -extent ${1}x$1"
+  TARGET_SIZE=$1
+  PADDING=$2
+  WITHOUT_PADDING=$[$1 - ($PADDING * 2)]
+  echo "-filter catrom -resize ${WITHOUT_PADDING}x$WITHOUT_PADDING \
+    -gravity center -extent ${TARGET_SIZE}x$TARGET_SIZE"
 }
 
 function generate() {
@@ -52,11 +56,13 @@ function generate() {
     | convert $OPTIONS $(resize 64 2) - $WINDOWS_SIZES "$WINDOWS/${OUT}_white.ico"
 }
 
-mkdir -p "$MENUBAR_PATH/darwin" "$MENUBAR_PATH/win32" "$MENUBAR_PATH/linux"
+mkdir -p "$MACOS" "$WINDOWS" "$LINUX" "$TMP"
 
 for i in {1..9}; do
   generate lock-$i lock-$i
 done
 
 generate lock-10 lock-10_2
+
+#rm -rf $TMP
 
