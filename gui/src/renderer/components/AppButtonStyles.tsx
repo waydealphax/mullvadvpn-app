@@ -10,9 +10,9 @@ export const StyledLabelContainer = styled.div((props: { textAdjustment: number 
 
 export const StyledLabel = styled.span({
   fontFamily: 'DINPro',
-  fontSize: '20px',
+  fontSize: '19px',
   fontWeight: 900,
-  lineHeight: '26px',
+  lineHeight: '24px',
   flex: 1,
   color: colors.white,
   textAlign: 'center',

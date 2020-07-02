@@ -14,14 +14,14 @@ const styles = {
   },
   title: Styles.createTextStyle({
     fontFamily: 'DINPro',
-    fontSize: 32,
+    fontSize: 29,
     fontWeight: '900',
     lineHeight: 36,
     color: colors.white,
   }),
   subtitle: Styles.createTextStyle({
     fontFamily: 'Open Sans',
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     overflow: 'visible',
     color: colors.white80,

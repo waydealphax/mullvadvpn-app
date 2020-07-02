@@ -18,12 +18,12 @@ export const StyledSection = styled.div({
 
 export const StyledSectionTitle = styled.span({
   backgroundColor: colors.blue,
-  padding: '14px 24px',
+  padding: '13px 24px',
   marginBottom: '1px',
   fontFamily: 'DINPro',
-  fontSize: '20px',
+  fontSize: '18px',
   fontWeight: 900,
-  lineHeight: '26px',
+  lineHeight: '24px',
   color: colors.white,
 });
 
@@ -52,12 +52,12 @@ export const StyledCellButton = styled.button({}, (props: IStyledCellButtonProps
 }));
 
 export const StyledLabel = styled.div({}, (props: { disabled: boolean }) => ({
-  margin: '14px 0 14px 8px',
+  margin: '13px 0 13px 6px',
   flex: 1,
   fontFamily: 'DINPro',
-  fontSize: '20px',
+  fontSize: '18px',
   fontWeight: 900,
-  lineHeight: '26px',
+  lineHeight: '24px',
   letterSpacing: -0.2,
   color: props.disabled ? colors.white40 : colors.white,
   textAlign: 'left',
@@ -66,7 +66,7 @@ export const StyledLabel = styled.div({}, (props: { disabled: boolean }) => ({
 export const StyledSubText = styled.span({
   color: colors.white60,
   fontFamily: 'Open Sans',
-  fontSize: '13px',
+  fontSize: '12px',
   fontWeight: 800,
   flex: -1,
   textAlign: 'right',
@@ -92,9 +92,9 @@ export const StyledFooter = styled.div({
 
 export const StyledFooterText = styled.span({
   fontFamily: 'Open Sans',
-  fontSize: '13px',
+  fontSize: '12px',
   fontWeight: 600,
-  lineHeight: '20px',
+  lineHeight: '17px',
   letterSpacing: -0.2,
   color: colors.white80,
 });
@@ -112,10 +112,10 @@ export const StyledInputFrame = styled.div({
 
 const inputTextStyles: React.CSSProperties = {
   fontFamily: 'Open Sans',
-  fontSize: '20px',
+  fontSize: '18px',
   fontWeight: 600,
-  lineHeight: '26px',
-  height: '26px',
+  lineHeight: '24px',
+  height: '24px',
   textAlign: 'right',
   padding: '0px',
 };
