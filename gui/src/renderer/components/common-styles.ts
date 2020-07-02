@@ -1,8 +1,8 @@
 import { colors } from '../../config.json';
 
 export const pageHorizontalPadding = {
-  paddingLeft: '24px',
-  paddingRight: '24px',
+  paddingLeft: '22px',
+  paddingRight: '22px',
 };
 
 export const smallText = {
@@ -15,8 +15,8 @@ export const smallText = {
 
 export const mediumText = {
   fontFamily: 'Open Sans',
-  fontSize: '20px',
-  lineHeight: '26px',
+  fontSize: '18px',
+  lineHeight: '24px',
 };
 
 export const buttonText = {
@@ -28,8 +28,8 @@ export const buttonText = {
 
 export const bigText = {
   fontFamily: 'DINPro',
-  fontSize: '32px',
+  fontSize: '30px',
   fontWeight: 900,
-  lineHeight: '36px',
+  lineHeight: '34px',
   color: colors.white,
 };
