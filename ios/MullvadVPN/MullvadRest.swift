@@ -158,12 +158,12 @@ final class RestOperation<Input, Response>: AsyncOperation, InputOperation, Outp
         self.session = session
 
         super.init()
-        self.input = input
+        self.input = input.map { .ready($0) } ?? .pending
     }
 
     override func main() {
-        guard let payload = self.input else {
-            finish()
+        guard case .ready(let payload) = self.input else {
+            finish(error: OperationError.inputRequirement)
             return
         }
 
@@ -180,7 +180,7 @@ final class RestOperation<Input, Response>: AsyncOperation, InputOperation, Outp
         }
     }
 
-    override func operationDidCancel() {
+    override func operationDidCancel(error: Error?) {
         task?.cancel()
         task = nil
     }

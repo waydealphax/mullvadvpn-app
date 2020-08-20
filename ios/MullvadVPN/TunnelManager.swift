@@ -357,8 +357,8 @@ class TunnelManager {
             }
         }
 
-        operation.addDidFinishBlockObserver { (operation, result) in
-            completionHandler(result)
+        operation.addDidFinishBlockObserver { (operation, error) in
+            completionHandler(operation.output.value!)
         }
 
         exclusityController.addOperation(operation, categories: [.tunnelControl])
@@ -402,8 +402,8 @@ class TunnelManager {
             }
         }
 
-        operation.addDidFinishBlockObserver { (operation, result) in
-            completionHandler(result)
+        operation.addDidFinishBlockObserver { (operation, error) in
+            completionHandler(operation.output.value!)
         }
 
         exclusityController.addOperation(operation, categories: [.tunnelControl])
@@ -429,8 +429,8 @@ class TunnelManager {
             }
         }
 
-        operation.addDidFinishBlockObserver { (operation, result) in
-            completionHandler(result)
+        operation.addDidFinishBlockObserver { (operation, error) in
+            completionHandler(operation.output.value!)
         }
 
         exclusityController.addOperation(operation, categories: [.tunnelControl])
@@ -451,7 +451,7 @@ class TunnelManager {
             }
         }
 
-        operation.addDidFinishBlockObserver { (operation) in
+        operation.addDidFinishBlockObserver { (operation, error) in
             completionHandler?()
         }
 
@@ -490,8 +490,8 @@ class TunnelManager {
                 finish(result)
             }
         }
-        operation.addDidFinishBlockObserver { (operation, result) in
-            completionHandler(result)
+        operation.addDidFinishBlockObserver { (operation, error) in
+            completionHandler(operation.output.value!)
         }
 
         exclusityController.addOperation(operation, categories: [.tunnelControl])
@@ -584,8 +584,8 @@ class TunnelManager {
 
         }
 
-        operation.addDidFinishBlockObserver { (operation, result) in
-            completionHandler(result)
+        operation.addDidFinishBlockObserver { (operation, error) in
+            completionHandler(operation.output.value!)
         }
 
         exclusityController.addOperation(operation, categories: [.tunnelControl])
@@ -615,8 +615,8 @@ class TunnelManager {
             .operation(payload: nil)
             .injectResult(from: makePayloadOperation)
 
-        getPubkeyOperation.addDidFinishBlockObserver { (operation, result) in
-            let result = result.map { (_) -> Bool in
+        getPubkeyOperation.addDidFinishBlockObserver { (operation, error) in
+            let result = operation.output.value!.map { (_) -> Bool in
                 return true
             }.mapError { (restError) -> Error in
                 return .verifyWireguardKey(restError)
@@ -671,8 +671,8 @@ class TunnelManager {
             }
         }
 
-        operation.addDidFinishBlockObserver { (operation, result) in
-            completionHandler(result)
+        operation.addDidFinishBlockObserver { (operation, error) in
+            completionHandler(operation.output.value!)
         }
 
         exclusityController.addOperation(operation, categories: [.tunnelControl])
@@ -709,8 +709,8 @@ class TunnelManager {
             }
         }
 
-        operation.addDidFinishBlockObserver { (operation, result) in
-            completionHandler(result)
+        operation.addDidFinishBlockObserver { (operation, error) in
+            completionHandler(operation.output.value!)
         }
 
         exclusityController.addOperation(operation, categories: [.tunnelControl])
@@ -826,8 +826,8 @@ class TunnelManager {
         let payload = TokenPayload(token: accountToken, payload: PushWireguardKeyRequest(pubkey: publicKey.rawRepresentation))
         let operation = rest.pushWireguardKey().operation(payload: payload)
 
-        operation.addDidFinishBlockObserver(queue: dispatchQueue) { (operation, result) in
-            let updateResult = result
+        operation.addDidFinishBlockObserver(queue: dispatchQueue) { (operation, error) in
+            let updateResult = operation.output.value!
                 .mapError({ (restError) -> Error in
                     return .pushWireguardKey(restError)
                 })
@@ -850,8 +850,8 @@ class TunnelManager {
         let payload = PublicKeyPayload(pubKey: publicKey, payload: TokenPayload(token: accountToken, payload: EmptyPayload()))
         let operation = rest.deleteWireguardKey().operation(payload: payload)
 
-        operation.addDidFinishBlockObserver(queue: dispatchQueue) { (operation, result) in
-            let result = result.map({ () -> Bool in
+        operation.addDidFinishBlockObserver(queue: dispatchQueue) { (operation, error) in
+            let result = operation.output.value!.map({ () -> Bool in
                 return true
             }).flatMapError { (restError) -> Result<Bool, Error> in
                 if case .server(.pubKeyNotFound) = restError {
@@ -883,8 +883,8 @@ class TunnelManager {
 
         let operation = rest.replaceWireguardKey().operation(payload: payload)
 
-        operation.addDidFinishBlockObserver(queue: dispatchQueue) { (operation, result) in
-            let updateResult = result
+        operation.addDidFinishBlockObserver(queue: dispatchQueue) { (operation, error) in
+            let updateResult = operation.output.value!
                 .mapError({ (restError) -> Error in
                     return .replaceWireguardKey(restError)
                 })

@@ -20,7 +20,7 @@ class TransformOperation<Input, Output>: AsyncOperation, InputOperation, OutputO
         self.executor = executor
 
         super.init()
-        self.input = input
+        self.input = input.map { .ready($0) } ?? .pending
     }
 
     convenience init(input: Input? = nil, _ block: @escaping (Input, @escaping (Output) -> Void) -> Void) {
@@ -32,19 +32,19 @@ class TransformOperation<Input, Output>: AsyncOperation, InputOperation, OutputO
     }
 
     override func main() {
-        guard let input = input else {
-            self.finish()
+        guard let value = input.value else {
+            self.finish(error: OperationError.inputRequirement)
             return
         }
 
         switch executor {
         case .callback(let block):
-            block(input) { [weak self] (result) in
+            block(value) { [weak self] (result) in
                 self?.finish(with: result)
             }
 
         case .transform(let block):
-            self.finish(with: block(input))
+            self.finish(with: block(value))
         }
     }
 }

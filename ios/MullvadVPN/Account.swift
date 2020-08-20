@@ -30,6 +30,9 @@ class Account {
 
         /// A failure to configure a tunnel
         case tunnelConfiguration(TunnelManager.Error)
+
+        /// A failure to perform the operation because the account is unset
+        case noAccountSet
     }
 
     /// A notification name used to broadcast the changes to account expiry
@@ -92,8 +95,8 @@ class Account {
     func loginWithNewAccount(completionHandler: @escaping (Result<AccountResponse, Error>) -> Void) {
         let operation = rest.createAccount().operation(payload: EmptyPayload())
 
-        operation.addDidFinishBlockObserver(queue: .main) { (operation, result) in
-            switch result {
+        operation.addDidFinishBlockObserver(queue: .main) { (operation, error) in
+            switch operation.output.value! {
             case .success(let response):
                 self.setupTunnel(accountToken: response.token, expiry: response.expires) { (result) in
                     completionHandler(result.map { response })
@@ -113,8 +116,8 @@ class Account {
         let operation = rest.getAccountExpiry()
             .operation(payload: .init(token: accountToken, payload: EmptyPayload()))
 
-        operation.addDidFinishBlockObserver(queue: .main) { (operation, result) in
-            switch result {
+        operation.addDidFinishBlockObserver(queue: .main) { (operation, error) in
+            switch operation.output.value! {
             case .success(let response):
                 self.setupTunnel(accountToken: response.token, expiry: response.expires) { (result) in
                     completionHandler(result.map { response })
@@ -146,17 +149,20 @@ class Account {
             }
         }
 
-        operation.addDidFinishBlockObserver(queue: .main) { (operation, result) in
-            completionHandler(result)
+        operation.addDidFinishBlockObserver(queue: .main) { (operation, error) in
+            completionHandler(operation.output.value!)
         }
 
         exclusivityController.addOperation(operation, categories: [.exclusive])
     }
 
     func updateAccountExpiry() {
-        let makeRequest = ResultOperation { () -> TokenPayload<EmptyPayload>? in
-            return self.token.flatMap { (token) in
-                return TokenPayload(token: token, payload: EmptyPayload())
+        let makeRequest = ResultOperation<TokenPayload<EmptyPayload>, Error> { () -> Result<TokenPayload<EmptyPayload>, Error> in
+            if let token = self.token {
+                let payload = TokenPayload(token: token, payload: EmptyPayload())
+                return .success(payload)
+            } else {
+                return .failure(.noAccountSet)
             }
         }
 
@@ -164,8 +170,8 @@ class Account {
             .operation(payload: nil)
             .injectResult(from: makeRequest)
 
-        sendRequest.addDidFinishBlockObserver(queue: .main) { (operation, result) in
-            switch result {
+        sendRequest.addDidFinishBlockObserver(queue: .main) { (operation, error) in
+            switch operation.output.value! {
             case .success(let response):
                 self.expiry = response.expires
                 self.postExpiryUpdateNotification(newExpiry: response.expires)

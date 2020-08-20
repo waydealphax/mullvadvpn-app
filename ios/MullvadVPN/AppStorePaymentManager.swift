@@ -219,8 +219,8 @@ class AppStorePaymentManager: NSObject, SKPaymentTransactionObserver {
             return ProductsRequestOperation(request: request)
         }
 
-        operation.addDidFinishBlockObserver { (operation, result) in
-            completionHandler(result)
+        operation.addDidFinishBlockObserver { (operation, error) in
+            completionHandler(operation.output.value!)
         }
 
         operationQueue.addOperation(operation)
@@ -253,8 +253,8 @@ class AppStorePaymentManager: NSObject, SKPaymentTransactionObserver {
                 let createApplePaymentOperation = self.rest.createApplePayment()
                     .operation(payload: payload)
 
-                createApplePaymentOperation.addDidFinishBlockObserver { (operation, result) in
-                    switch result {
+                createApplePaymentOperation.addDidFinishBlockObserver { (operation, error) in
+                    switch operation.output.value! {
                     case .success(let response):
                         self.logger.info("AppStore Receipt was processed. Time added: \(response.timeAdded), New expiry: \(response.newExpiry)")
 
@@ -385,7 +385,7 @@ private class ProductsRequestOperation: AsyncOperation, OutputOperation, SKProdu
         request.start()
     }
 
-    override func operationDidCancel() {
+    override func operationDidCancel(error: Error?) {
         request.cancel()
     }
 

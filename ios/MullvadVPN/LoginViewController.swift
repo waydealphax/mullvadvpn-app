@@ -323,6 +323,8 @@ private extension LoginState {
                 return rpcError.errorChainDescription ?? ""
             case .tunnelConfiguration:
                 return NSLocalizedString("Internal error", comment: "")
+            case .noAccountSet:
+                return NSLocalizedString("Internal error", comment: "")
             }
 
         case .success(let method):

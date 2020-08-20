@@ -11,7 +11,9 @@ import Foundation
 protocol OperationObserver {
     associatedtype OperationType: OperationProtocol
 
-    func operationWillFinish(_ operation: OperationType)
-    func operationDidFinish(_ operation: OperationType)
+    func operationWillExecute(_ operation: OperationType)
+    func operationDidExecute(_ operation: OperationType)
+    func operationWillFinish(_ operation: OperationType, error: Error?)
+    func operationDidFinish(_ operation: OperationType, error: Error?)
 }
 

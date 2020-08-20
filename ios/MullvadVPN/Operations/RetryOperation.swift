@@ -54,36 +54,35 @@ class RetryOperation<OperationType, Success, Failure: Error>: AsyncOperation, Ou
         retry()
     }
 
-    override func operationDidCancel() {
+    override func operationDidCancel(error: Error?) {
         operationQueue.cancelAllOperations()
     }
 
     private func retry(delay: TimeInterval? = nil) {
         let child = producer()
 
-        child.addDidFinishBlockObserver { [weak self] (operation) in
+        child.addDidFinishBlockObserver { [weak self] (operation, error) in
             guard let self = self else { return }
 
             // Operation finished without output set?
-            guard let result = operation.output else {
-                self.finish()
+            guard let result = operation.output.value else {
+                // Propagate the child error if set
+                self.finish(error: error)
                 return
             }
 
-            self.synchronized {
-                guard case .failure(let error) = result,
-                    let delay = self.delayIterator.next(),
-                    self.shouldRetry(error: error) else {
-                    self.finish(with: result)
-                    return
-                }
-
-                self.retryCount += 1
-                self.retry(delay: delay)
+            guard case .failure(let error) = result,
+                let delay = self.delayIterator.next(),
+                self.shouldRetry(error: error) else {
+                self.finish(with: result)
+                return
             }
+
+            self.retryCount += 1
+            self.retry(delay: delay)
         }
 
-        synchronized {
+        self.synchronized {
             childConfigurator?(child)
         }
 
@@ -112,9 +111,9 @@ class RetryOperation<OperationType, Success, Failure: Error>: AsyncOperation, Ou
 extension RetryOperation: InputOperation where OperationType: InputOperation {
     typealias Input = OperationType.Input
 
-    func operationDidSetInput(_ input: OperationType.Input?) {
+    func operationDidSetInput(_ input: OperationType.Input) {
         setChildConfigurator { (child) in
-            child.input = input
+            child.input = .ready(input)
         }
     }
 }

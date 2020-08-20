@@ -40,7 +40,7 @@ class DelayOperation: AsyncOperation {
         timer.activate()
     }
 
-    override func operationDidCancel() {
+    override func operationDidCancel(error: Error?) {
         timer?.cancel()
         timer = nil
         finish()

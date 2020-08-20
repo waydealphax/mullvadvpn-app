@@ -12,6 +12,14 @@ import Foundation
 class AsyncBlockOperation: AsyncOperation {
     private let block: (@escaping () -> Void) -> Void
 
+    init(_ block: @escaping () -> Void) {
+        self.block = { (finish) in
+            block()
+            finish()
+        }
+        super.init()
+    }
+
     init(_ block: @escaping (@escaping () -> Void) -> Void) {
         self.block = block
         super.init()
@@ -23,4 +31,3 @@ class AsyncBlockOperation: AsyncOperation {
         }
     }
 }
-

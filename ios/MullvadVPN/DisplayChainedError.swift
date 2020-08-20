@@ -118,6 +118,9 @@ extension Account.Error: DisplayChainedError {
 
         case .tunnelConfiguration(let tunnelError):
             return tunnelError.errorChainDescription
+
+        case .noAccountSet:
+            return NSLocalizedString("Internal error: account is not set", comment: "")
         }
     }
 

@@ -12,6 +12,9 @@ import NetworkExtension
 import Logging
 
 enum PacketTunnelProviderError: ChainedError {
+    /// Failure to process a tunnel command as it was unexpected.
+    case unexpectedTunnelCommand
+
     /// Failure to read the relay cache
     case readRelayCache(RelayCacheError)
 
@@ -67,6 +70,9 @@ enum PacketTunnelProviderError: ChainedError {
 
         case .ipcHandler:
             return "Failure to handle the IPC request"
+
+        case .unexpectedTunnelCommand:
+            return "Unexpected tunnel command"
         }
     }
 }
@@ -101,6 +107,17 @@ extension PacketTunnelConfiguration {
             ]
         )
     }
+}
+
+struct StartTunnelResult {
+    let wireguardDevice: WireguardDevice
+    let automaticKeyRotationManager: AutomaticKeyRotationManager
+    let packetTunnelConfiguration: PacketTunnelConfiguration
+}
+
+struct TunnelContext {
+    let wireguardDevice: WireguardDevice
+    let keyRotationManager: AutomaticKeyRotationManager
 }
 
 class PacketTunnelProvider: NEPacketTunnelProvider {
@@ -143,45 +160,41 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
     // MARK: - Subclass
 
     override func startTunnel(options: [String : NSObject]?, completionHandler: @escaping (Error?) -> Void) {
-        logger.info("Start the tunnel")
+        let operation = self.makeStartTunnelOperation { (result, error) in
+            if let result = result {
+                self.dispatchQueue.async {
+                    self.wireguardDevice = result.wireguardDevice
+                    self.keyRotationManager = result.automaticKeyRotationManager
+                    self.setTunnelConnectionInfo(selectorResult: result.packetTunnelConfiguration.selectorResult)
 
-        let operation = AsyncBlockOperation { (finish) in
-            self.doStartTunnel { (result) in
-                switch result {
-                case .success:
                     self.logger.info("Started the tunnel")
-                    completionHandler(nil)
 
-                case .failure(let error):
-                    self.logger.error(chainedError: error, message: "Failed to start the tunnel")
-                    completionHandler(error)
+                    completionHandler(nil)
+                }
+            } else {
+                if let chainedError = error as? ChainedError {
+                    self.logger.error(chainedError: chainedError, message: "Failed to start the tunnel")
+                } else {
+                    self.logger.error("Failed to start the tunnel: \(error?.localizedDescription ?? "No error")")
                 }
 
-                finish()
+                completionHandler(error)
             }
         }
 
-        exclusivityController.addOperation(operation, categories: [.exclusive])
+        self.exclusivityController.addOperation(operation, categories: [.exclusive])
     }
 
     override func stopTunnel(with reason: NEProviderStopReason, completionHandler: @escaping () -> Void) {
-        logger.info("Stop the tunnel. Reason: \(reason)")
+        self.logger.info("Stop the tunnel. Reason: \(reason)")
 
-        let operation = AsyncBlockOperation { (finish) in
-            self.doStopTunnel { (result) in
-                switch result {
-                case .success:
-                    self.logger.info("Stopped the tunnel")
-                case .failure(let error):
-                    self.logger.error(chainedError: error, message: "Failed to stop the tunnel")
-                }
+        let operation = self.makeStopTunnelOperation { (error) in
+            self.logger.info("Stopped the tunnel")
 
-                completionHandler()
-                finish()
-            }
+            completionHandler()
         }
 
-        exclusivityController.addOperation(operation, categories: [.exclusive])
+        self.exclusivityController.addOperation(operation, categories: [.exclusive])
     }
 
     override func handleAppMessage(_ messageData: Data, completionHandler: ((Data?) -> Void)?) {
@@ -218,121 +231,222 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
 
     // MARK: - Tunnel management
 
-    private func doStartTunnel(completionHandler: @escaping (Result<(), PacketTunnelProviderError>) -> Void) {
-        makePacketTunnelConfig { (result) in
-            guard case .success(let packetTunnelConfig) = result else {
-                completionHandler(result.map { _ in () })
-                return
+    private func makeStartTunnelOperation(completionHandler: @escaping (StartTunnelResult?, Error?) -> Void) -> GroupOperation {
+        let makeTunnelConfigOperation = MakePacketTunnelConfigurationOperation(passwordReference: protocolConfiguration.passwordReference)
+        let networkSettingsOperation = SetTunnelNetworkSettingsOperation(tunnelProvider: self).inject(from: makeTunnelConfigOperation) { (output) -> InjectionResult<NETunnelNetworkSettings> in
+            switch output {
+            case .success(let tunnelConfig):
+                let settingsGenerator = PacketTunnelSettingsGenerator(
+                    mullvadEndpoint: tunnelConfig.selectorResult.endpoint,
+                    tunnelSettings: tunnelConfig.tunnelSettings
+                )
+                return .success(settingsGenerator.networkSettings())
+
+            case .failure(let error):
+                // TODO: handle error?
+                return .failure
             }
+        }
 
-            self.updateNetworkSettings(packetTunnelConfig: packetTunnelConfig) { (result) in
-                guard case .success = result else {
-                    completionHandler(result)
-                    return
+        let startWireguardOperation = StartWireguardOperation(packetFlow: self.packetFlow)
+            .inject(from: makeTunnelConfigOperation) { (output) -> InjectionResult<WireguardConfiguration> in
+                switch output {
+                case .success(let tunnelConfig):
+                    return .success(tunnelConfig.wireguardConfig)
+                case .failure(let error):
+                    // TODO: handle error?
+                    return .failure
                 }
+        }
+        startWireguardOperation.addDependency(networkSettingsOperation)
+        startWireguardOperation.setAllowDependencyFailuresAndCancellations(false)
 
-                self.startWireguardDevice(packetFlow: self.packetFlow, configuration: packetTunnelConfig.wireguardConfig) { (result) in
-                    self.dispatchQueue.async {
-                        guard case .success(let device) = result else {
-                            completionHandler(result.map { _ in () })
-                            return
-                        }
+        let startKeyRotationOperation = TransformOperation<Data, Result<AutomaticKeyRotationManager, PacketTunnelProviderError>>(input: protocolConfiguration.passwordReference) { (keychainReference, finish) in
+            let keyRotationManager = AutomaticKeyRotationManager(persistentKeychainReference: keychainReference)
 
-                        let persistentKeychainReference = packetTunnelConfig.persistentKeychainReference
-                        let keyRotationManager = AutomaticKeyRotationManager(persistentKeychainReference: persistentKeychainReference)
-                        keyRotationManager.eventHandler = { (keyRotationEvent) in
-                            self.dispatchQueue.async {
-                                self.reloadTunnelSettings { (result) in
-                                    switch result {
-                                    case .success:
-                                        break
-
-                                    case .failure(let error):
-                                        self.logger.error(chainedError: error, message: "Failed to reload tunnel settings")
-                                    }
-                                }
-                            }
-                        }
-
-                        self.wireguardDevice = device
-                        self.keyRotationManager = keyRotationManager
-
-                        RelayCache.shared.startPeriodicUpdates {
-                            keyRotationManager.startAutomaticRotation {
-                                self.dispatchQueue.async {
-                                    completionHandler(.success(()))
-                                }
-                            }
+            keyRotationManager.eventHandler = { (keyRotationEvent) in
+                self.dispatchQueue.async {
+                    self.reloadTunnelSettings { (result) in
+                        switch result {
+                        case .success:
+                            break
+                        case .failure(let error):
+                            self.logger.error(chainedError: error, message: "Failed to reload tunnel settings")
                         }
                     }
                 }
             }
+
+            keyRotationManager.startAutomaticRotation {
+                finish(.success(keyRotationManager))
+            }
         }
+        startKeyRotationOperation.addDependency(startWireguardOperation)
+        startKeyRotationOperation.setAllowDependencyFailuresAndCancellations(false)
+
+        let startRelayCachePeriodicUpdatesOperation = AsyncBlockOperation { (finish) in
+            RelayCache.shared.startPeriodicUpdates {
+                finish()
+            }
+        }
+        startRelayCachePeriodicUpdatesOperation.addDependency(startKeyRotationOperation)
+        startRelayCachePeriodicUpdatesOperation.setAllowDependencyFailuresAndCancellations(false)
+
+        let mergeResultsOperation = MergeResult3Operation(startWireguardOperation, startKeyRotationOperation, makeTunnelConfigOperation) { (wireguardDevice, keyRotationManager, tunnelConfig) -> Result<StartTunnelResult, PacketTunnelProviderError> in
+            let result = StartTunnelResult(
+                wireguardDevice: wireguardDevice,
+                automaticKeyRotationManager: keyRotationManager,
+                packetTunnelConfiguration: tunnelConfig
+            )
+            return .success(result)
+        }
+
+        let groupOperation = GroupOutputOperation(operations: [
+            makeTunnelConfigOperation,
+            networkSettingsOperation,
+            startWireguardOperation,
+            startKeyRotationOperation,
+            startRelayCachePeriodicUpdatesOperation,
+            mergeResultsOperation
+        ]) { (children) -> Result<StartTunnelResult, PacketTunnelProviderError>? in
+            self.logger.info("MergeResults value: \(mergeResultsOperation.output)")
+            return mergeResultsOperation.output.value
+        }
+
+        groupOperation.addWillFinishBlockObserver { (op, error) in
+            do {
+                let result = try op.output.value?.get()
+
+                completionHandler(result, error)
+            } catch {
+                completionHandler(nil, error)
+            }
+
+        }
+
+        return groupOperation
     }
 
-    private func doStopTunnel(completionHandler: @escaping (Result<(), PacketTunnelProviderError>) -> Void) {
-        guard let device = self.wireguardDevice, let keyRotationManager = self.keyRotationManager
-            else {
-                completionHandler(.success(()))
+    private func makeStopTunnelOperation(completionHandler: @escaping (Error?) -> Void) -> GroupOperation {
+        let makeContextOperation = ResultOperation<TunnelContext, PacketTunnelProviderError> { (finish) in
+            guard let wireguardDevice = self.wireguardDevice, let keyRotationManager = self.keyRotationManager else {
+                finish(.failure(.unexpectedTunnelCommand))
                 return
+            }
+
+            let context = TunnelContext(wireguardDevice: wireguardDevice, keyRotationManager: keyRotationManager)
+
+            finish(.success(context))
         }
 
-        RelayCache.shared.stopPeriodicUpdates {
-            keyRotationManager.stopAutomaticRotation {
-                device.stop { (result) in
-                    self.dispatchQueue.async {
-                        self.wireguardDevice = nil
-                        self.keyRotationManager = nil
+        let stopRelayUpdatesOperation = AsyncBlockOperation { (finish) in
+            RelayCache.shared.stopPeriodicUpdates {
+                finish()
+            }
+        }
 
-                        let result = result.mapError({ (error) -> PacketTunnelProviderError in
-                            return .stopWireguardDevice(error)
-                        })
-                        completionHandler(result)
-                    }
+        let stopKeyRotationOperation = TransformOperation<TunnelContext, Void> { (context, finish) in
+            context.keyRotationManager.stopAutomaticRotation {
+                finish(())
+            }
+        }.injectResult(from: makeContextOperation)
+
+        stopKeyRotationOperation.addDependency(stopRelayUpdatesOperation)
+
+        let stopWireguardOperation = TransformOperation<TunnelContext, Result<Void, PacketTunnelProviderError>> { (context, finish) in
+            context.wireguardDevice.stop { (result) in
+                self.dispatchQueue.async {
+                    self.wireguardDevice = nil
+                    self.keyRotationManager = nil
+
+                    let result = result.mapError({ (error) -> PacketTunnelProviderError in
+                        return .stopWireguardDevice(error)
+                    })
+
+                    finish(result)
                 }
             }
+        }.injectResult(from: makeContextOperation)
+
+        stopWireguardOperation.addDependency(stopRelayUpdatesOperation)
+        stopWireguardOperation.addDependency(stopKeyRotationOperation)
+
+        let groupOperation = GroupOperation(operations: [
+            makeContextOperation,
+            stopRelayUpdatesOperation,
+            stopKeyRotationOperation,
+            stopWireguardOperation
+        ])
+
+        groupOperation.addWillFinishBlockObserver { (op, error) in
+            completionHandler(error)
         }
+
+        return groupOperation
     }
 
-    private func doReloadTunnelSettings(completionHandler: @escaping (Result<(), PacketTunnelProviderError>) -> Void) {
-        guard let device = self.wireguardDevice else {
-            logger.warning("Ignore reloading tunnel settings. The WireguardDevice is not set yet.")
-
-            completionHandler(.success(()))
-            return
+    private func makeReloadTunnelSettingsOperation(completionHandler: @escaping (Error?) -> Void) -> GroupOperation {
+        let makeInputOperation = ResultOperation<WireguardDevice, PacketTunnelProviderError> { () -> Result<WireguardDevice, PacketTunnelProviderError> in
+            return self.wireguardDevice.map { .success($0) } ?? .failure(.unexpectedTunnelCommand)
         }
 
-        logger.info("Reload tunnel settings")
+        let makeTunnelConfigOperation = MakePacketTunnelConfigurationOperation(passwordReference: protocolConfiguration.passwordReference)
 
-        makePacketTunnelConfig { (result) in
-            guard case .success(let packetTunnelConfig) = result else {
-                completionHandler(result.map { _ in () })
-                return
+        let networkSettingsOperation = SetTunnelNetworkSettingsOperation(tunnelProvider: self).inject(from: makeTunnelConfigOperation) { (output) -> InjectionResult<NETunnelNetworkSettings> in
+            switch output {
+            case .success(let tunnelConfig):
+                let settingsGenerator = PacketTunnelSettingsGenerator(
+                    mullvadEndpoint: tunnelConfig.selectorResult.endpoint,
+                    tunnelSettings: tunnelConfig.tunnelSettings
+                )
+                
+                return .success(settingsGenerator.networkSettings())
+
+            case .failure(let error):
+                // TODO: handle error?
+                return .failure
             }
+        }
 
-            // Tell the system that the tunnel is about to reconnect with the new endpoint
+        let mergeWireguardDeviceAndSettingsOperation = MergeResultOperation(makeInputOperation, makeTunnelConfigOperation) { (a, b) -> Result<(WireguardDevice, WireguardConfiguration), PacketTunnelProviderError> in
+            return .success((a, b.wireguardConfig))
+        }
+
+        let setWireguardSettingsOperation = TransformOperation<(WireguardDevice, WireguardConfiguration), Result<(), PacketTunnelProviderError>> { (input: (WireguardDevice, WireguardConfiguration), finish) in
+            let (device, config) = input
+            device.setConfiguration(config) { (result) in
+                finish(result.mapError({ (error) -> PacketTunnelProviderError in
+                    return .updateWireguardConfiguration(error)
+                }))
+            }
+        }.injectResult(from: mergeWireguardDeviceAndSettingsOperation)
+
+        let startReassertingOperation = TransformOperation<PacketTunnelConfiguration, Void> { (tunnelConfig, finish) in
+            self.setTunnelConnectionInfo(selectorResult: tunnelConfig.selectorResult)
+
             self.reasserting = true
+        }.injectResult(from: makeTunnelConfigOperation)
 
-            let finishReconnecting = { (result: Result<(), PacketTunnelProviderError>) in
-                // Tell the system that the tunnel has finished reconnecting
-                self.reasserting = false
-
-                completionHandler(result)
-            }
-
-            self.updateNetworkSettings(packetTunnelConfig: packetTunnelConfig) { (result) in
-                guard case .success = result else {
-                    finishReconnecting(result)
-                    return
-                }
-
-                device.setConfiguration(packetTunnelConfig.wireguardConfig) { (result) in
-                    self.dispatchQueue.async {
-                        finishReconnecting(result.mapError { PacketTunnelProviderError.updateWireguardConfiguration($0) })
-                    }
-                }
-            }
+        let stopReassertingOperation = AsyncBlockOperation {
+            self.reasserting = false
         }
+        stopReassertingOperation.addDependency(setWireguardSettingsOperation)
+
+        let groupOperation = GroupOperation(operations: [
+            makeInputOperation,
+            makeTunnelConfigOperation,
+            networkSettingsOperation,
+            mergeWireguardDeviceAndSettingsOperation,
+            setWireguardSettingsOperation,
+            startReassertingOperation,
+            stopReassertingOperation
+        ])
+
+        groupOperation.addWillFinishBlockObserver { (op, error) in
+            completionHandler(error)
+        }
+
+        return groupOperation
     }
 
     // MARK: - Private
@@ -366,61 +480,39 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
         logger.info("Tunnel connection info: \(selectorResult.relay.hostname)")
     }
 
-    private func makePacketTunnelConfig(completionHandler: @escaping (Result<PacketTunnelConfiguration, PacketTunnelProviderError>) -> Void) {
-        guard let keychainReference = protocolConfiguration.passwordReference else {
-            completionHandler(.failure(.missingKeychainConfigurationReference))
+    private func reloadTunnelSettings(completionHandler: @escaping (Result<(), PacketTunnelProviderError>) -> Void) {
+        dispatchQueue.async {
+            let operation = self.makeReloadTunnelSettingsOperation { (error) in
+                self.logger.debug("Reloaded the tunnel.")
+
+                // TODO: propagate error
+                completionHandler(.success(()))
+            }
+
+            self.exclusivityController.addOperation(operation, categories: [.exclusive])
+        }
+    }
+
+}
+
+class MakePacketTunnelConfigurationOperation: AsyncOperation, InputOperation, OutputOperation {
+    typealias Input = Data
+    typealias Output = Result<PacketTunnelConfiguration, PacketTunnelProviderError>
+
+    init(passwordReference: Data? = nil) {
+        super.init()
+        self.input = passwordReference.map { .ready($0) } ?? .pending
+    }
+
+    override func main() {
+        guard case .ready(let passwordReference) = input else {
+            finish(with: .failure(.missingKeychainConfigurationReference))
             return
         }
 
-        Self.makePacketTunnelConfig(keychainReference: keychainReference) { (result) in
-            self.dispatchQueue.async {
-                guard case .success(let packetTunnelConfig) = result else {
-                    completionHandler(result)
-                    return
-                }
-
-                self.setTunnelConnectionInfo(selectorResult: packetTunnelConfig.selectorResult)
-
-                completionHandler(result)
-            }
+        Self.makePacketTunnelConfig(keychainReference: passwordReference) { (result) in
+            self.finish(with: result)
         }
-    }
-
-    private func updateNetworkSettings(packetTunnelConfig: PacketTunnelConfiguration, completionHandler: @escaping (Result<(), PacketTunnelProviderError>) -> Void) {
-        let settingsGenerator = PacketTunnelSettingsGenerator(
-            mullvadEndpoint: packetTunnelConfig.selectorResult.endpoint,
-            tunnelSettings: packetTunnelConfig.tunnelSettings
-        )
-
-        logger.info("Updating network settings...")
-
-        setTunnelNetworkSettings(settingsGenerator.networkSettings()) { (error) in
-            self.dispatchQueue.async {
-                if let error = error {
-                    self.logger.error("Cannot update network settings: \(error.localizedDescription)")
-
-                    completionHandler(.failure(.setNetworkSettings(error)))
-                } else {
-                    self.logger.info("Updated network settings")
-
-                    completionHandler(.success(()))
-                }
-            }
-        }
-    }
-
-    private func reloadTunnelSettings(completionHandler: @escaping (Result<(), PacketTunnelProviderError>) -> Void) {
-        let operation = ResultOperation<(), PacketTunnelProviderError> { (finish) in
-            self.doReloadTunnelSettings { (result) in
-                finish(result)
-            }
-        }
-
-        operation.addDidFinishBlockObserver(queue: dispatchQueue) { (operation, result) in
-            completionHandler(result)
-        }
-
-        exclusivityController.addOperation(operation, categories: [.exclusive])
     }
 
     /// Returns a `PacketTunnelConfig` that contains the tunnel settings and selected relay
@@ -469,24 +561,71 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
             }
         }
     }
+}
 
-    private func startWireguardDevice(packetFlow: NEPacketTunnelFlow, configuration: WireguardConfiguration, completionHandler: @escaping (Result<WireguardDevice, PacketTunnelProviderError>) -> Void) {
-        let result = WireguardDevice.fromPacketFlow(packetFlow)
+class SetTunnelNetworkSettingsOperation: AsyncOperation, InputOperation, OutputOperation {
+    typealias Input = NETunnelNetworkSettings
+    typealias Output = Result<(), Error>
 
-        guard case .success(let device) = result else {
-            completionHandler(result.mapError { PacketTunnelProviderError.startWireguardDevice($0) })
+    private let tunnelProvider: NEPacketTunnelProvider
+
+    init(tunnelProvider: NEPacketTunnelProvider, tunnelSettings: NETunnelNetworkSettings? = nil) {
+        self.tunnelProvider = tunnelProvider
+
+        super.init()
+
+        input = tunnelSettings.map { .ready($0) } ?? .pending
+    }
+
+    override func main() {
+        guard case .ready(let tunnelSettings) = input else {
+            finish(error: OperationError.inputRequirement)
             return
         }
 
-        let tunnelDeviceName = device.getInterfaceName() ?? "unknown"
+        tunnelProvider.setTunnelNetworkSettings(tunnelSettings) { [weak self] (error) in
+            guard let self = self, !self.isCancelled else { return }
 
-        logger.info("Tunnel interface is \(tunnelDeviceName)")
+            self.finish(with: error.map { .failure($0) } ?? .success(()))
+        }
+    }
 
-        device.start(configuration: configuration) { (result) in
-            let result = result.map { device }
-                .mapError { PacketTunnelProviderError.startWireguardDevice($0) }
+    override func operationDidCancel(error: Error?) {
+        finish()
+    }
+}
 
-            completionHandler(result)
+class StartWireguardOperation: AsyncOperation, InputOperation, OutputOperation {
+    typealias Input = WireguardConfiguration
+    typealias Output = Result<WireguardDevice, PacketTunnelProviderError>
+
+    private let packetFlow: NEPacketTunnelFlow
+
+    init(packetFlow: NEPacketTunnelFlow, configuration: WireguardConfiguration? = nil) {
+        self.packetFlow = packetFlow
+
+        super.init()
+        input = configuration.map { .ready($0) } ?? .pending
+    }
+
+    override func main() {
+        guard case .ready(let configuration) = input else {
+            finish(error: OperationError.inputRequirement)
+            return
+        }
+
+        switch WireguardDevice.fromPacketFlow(packetFlow) {
+        case .success(let device):
+            device.start(configuration: configuration) { (result) in
+                self.finish(with: result.map({ (_) -> WireguardDevice in
+                    return device
+                }).mapError({ (error) -> PacketTunnelProviderError in
+                    return .startWireguardDevice(error)
+                }))
+            }
+
+        case .failure(let error):
+            finish(with: .failure(.startWireguardDevice(error)))
         }
     }
 }

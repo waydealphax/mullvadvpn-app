@@ -8,47 +8,74 @@
 
 import Foundation
 
+enum PendingValue<T> {
+    case pending
+    case ready(T)
+
+    var value: T? {
+        switch self {
+        case .ready(let value):
+            return value
+        case .pending:
+            return nil
+        }
+    }
+}
+
+enum InjectionResult<T> {
+    case success(T)
+    case failure
+}
+
 protocol InputOperation: OperationProtocol {
     associatedtype Input
 
     /// When overriding `input` in Subclasses, make sure to call `operationDidSetInput`
-    var input: Input? { get set }
+    var input: PendingValue<Input> { get set }
 
-    func operationDidSetInput(_ input: Input?)
+    func operationDidSetInput(_ input: Input)
 }
 
 private var kInputOperationAssociatedValue = 0
 extension InputOperation where Self: OperationSubclassing {
-    var input: Input? {
+    var input: PendingValue<Input> {
         get {
             return synchronized {
-                return AssociatedValue.get(object: self, key: &kInputOperationAssociatedValue)
+                return AssociatedValue.get(object: self, key: &kInputOperationAssociatedValue) ?? .pending
             }
         }
         set {
             synchronized {
                 AssociatedValue.set(object: self, key: &kInputOperationAssociatedValue, value: newValue)
 
-                operationDidSetInput(newValue)
+                if let newValue = newValue.value {
+                    operationDidSetInput(newValue)
+                }
             }
         }
     }
 
-    func operationDidSetInput(_ input: Input?) {
+    func operationDidSetInput(_ input: Input) {
         // Override in subclasses
     }
 }
 
 extension InputOperation {
 
-    @discardableResult func inject<Dependency>(from dependency: Dependency, via block: @escaping (Dependency.Output) -> Input?) -> Self
+    @discardableResult func inject<Dependency>(from dependency: Dependency, via block: @escaping (Dependency.Output) -> InjectionResult<Input>) -> Self
         where Dependency: OutputOperation
     {
-        let observer = OperationBlockObserver<Dependency>(willFinish: { [weak self] (operation) in
+        let observer = OperationBlockObserver<Dependency>(willFinish: { [weak self] (operation, error) in
             guard let self = self else { return }
 
-            if let output = operation.output {
-                self.input = block(output)
+            if case .ready(let value)  = operation.output {
+                switch block(value) {
+                case .success(let input):
+                    self.input = .ready(input)
+                case .failure:
+                    // Unable to produce input
+                    break
+                }
             }
         })
         dependency.addObserver(observer)
@@ -58,45 +85,21 @@ extension InputOperation {
     }
 
     @discardableResult func injectResult<Dependency>(from dependency: Dependency) -> Self
-        where Dependency: OutputOperation, Dependency.Output == Input?
+        where Dependency: OutputOperation, Dependency.Output == Input
     {
-        return self.inject(from: dependency, via: { $0 })
+        return self.inject(from: dependency, via: { .success($0) })
     }
 
     /// Inject input from operation that outputs `Result<Input, Failure>`
     @discardableResult func injectResult<Dependency, Failure>(from dependency: Dependency) -> Self
         where Dependency: OutputOperation, Failure: Error, Dependency.Output == Result<Input, Failure>
     {
-        return self.inject(from: dependency) { (output) -> Input? in
+        return self.inject(from: dependency) { (output) -> InjectionResult<Input> in
             switch output {
             case .success(let value):
-                return value
+                return .success(value)
             case .failure:
-                return nil
-            }
-        }
-    }
-
-    /// Inject input from operation that outputs `Result<Input, Never>`
-    @discardableResult func injectResult<Dependency>(from dependency: Dependency) -> Self
-        where Dependency: OutputOperation, Dependency.Output == Result<Input, Never>
-    {
-        return self.inject(from: dependency) { (output) -> Input? in
-            switch output {
-            case .success(let value):
-                return value
-            }
-        }
-    }
-
-    /// Inject input from operation that outputs `Result<Input?, Never>`
-    @discardableResult func injectResult<Dependency>(from dependency: Dependency) -> Self
-        where Dependency: OutputOperation, Dependency.Output == Result<Input?, Never>
-    {
-        return self.inject(from: dependency) { (output) -> Input? in
-            switch output {
-            case .success(let value):
-                return value
+                return .failure
             }
         }
     }

@@ -53,6 +53,8 @@
 		581CBCE62296B97300727D7F /* ViewControllerIdentifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 581CBCE52296B97300727D7F /* ViewControllerIdentifier.swift */; };
 		581CBCEC2298041B00727D7F /* SettingsAppVersionCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 581CBCEB2298041B00727D7F /* SettingsAppVersionCell.swift */; };
 		581CBCEE229826FD00727D7F /* StaticTableViewDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 581CBCED229826FD00727D7F /* StaticTableViewDataSource.swift */; };
+		58283D1F24F65C600047E0E5 /* OperationError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58283D1E24F65C600047E0E5 /* OperationError.swift */; };
+		58283D2024F65E7A0047E0E5 /* OperationError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58283D1E24F65C600047E0E5 /* OperationError.swift */; };
 		582AE3102440A6CA00E6733A /* AccountTokenInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 582AE30F2440A6CA00E6733A /* AccountTokenInput.swift */; };
 		582AE3122440CA0D00E6733A /* AccountTokenInputTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 582AE3112440CA0D00E6733A /* AccountTokenInputTests.swift */; };
 		582AE3132440CA2700E6733A /* AccountTokenInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = 582AE30F2440A6CA00E6733A /* AccountTokenInput.swift */; };
@@ -112,11 +114,17 @@
 		587AD7C723421D8600E93A53 /* TunnelSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 587AD7C523421D7000E93A53 /* TunnelSettings.swift */; };
 		587AD7CA2342283900E93A53 /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = 587AD7C92342283900E93A53 /* Account.swift */; };
 		587CBFE322807F530028DED3 /* UIColor+Helpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 587CBFE222807F530028DED3 /* UIColor+Helpers.swift */; };
+		5880B9CA24EE733A00173CE4 /* GroupOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5880B9C924EE733A00173CE4 /* GroupOperation.swift */; };
+		5880B9CB24EE733A00173CE4 /* GroupOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5880B9C924EE733A00173CE4 /* GroupOperation.swift */; };
 		588534BF246193D90018B744 /* AutomaticKeyRotationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 588534BD246193C00018B744 /* AutomaticKeyRotationManager.swift */; };
 		5888AD7F2279B6BF0051EB06 /* RelayStatusIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5888AD7E2279B6BF0051EB06 /* RelayStatusIndicatorView.swift */; };
 		5888AD83227B11080051EB06 /* SelectLocationCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5888AD82227B11080051EB06 /* SelectLocationCell.swift */; };
 		5888AD87227B17950051EB06 /* SelectLocationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5888AD86227B17950051EB06 /* SelectLocationController.swift */; };
 		588D2FE3248AC27F00E313F7 /* AsyncOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58E973DD24850EB600096F90 /* AsyncOperation.swift */; };
+		588FBBAD24F7C4B400FFF071 /* MergeOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 588FBBAB24F7C4B400FFF071 /* MergeOperation.swift */; };
+		588FBBAE24F7C4B400FFF071 /* MergeResultOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 588FBBAC24F7C4B400FFF071 /* MergeResultOperation.swift */; };
+		588FBBAF24F7C4B800FFF071 /* MergeOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 588FBBAB24F7C4B400FFF071 /* MergeOperation.swift */; };
+		588FBBB024F7C4B800FFF071 /* MergeResultOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 588FBBAC24F7C4B400FFF071 /* MergeResultOperation.swift */; };
 		58906DE02445C7A5002F0673 /* NEProviderStopReason+Debug.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58906DDF2445C7A5002F0673 /* NEProviderStopReason+Debug.swift */; };
 		58907D9524D17B4E00CFC3F5 /* DisconnectSplitButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58907D9424D17B4E00CFC3F5 /* DisconnectSplitButton.swift */; };
 		5896AE7E246ACE65005B36CB /* KeychainAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58FAEDEB245059F000CB0F5B /* KeychainAttributes.swift */; };
@@ -281,6 +289,7 @@
 		581CBCE52296B97300727D7F /* ViewControllerIdentifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewControllerIdentifier.swift; sourceTree = "<group>"; };
 		581CBCEB2298041B00727D7F /* SettingsAppVersionCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsAppVersionCell.swift; sourceTree = "<group>"; };
 		581CBCED229826FD00727D7F /* StaticTableViewDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StaticTableViewDataSource.swift; sourceTree = "<group>"; };
+		58283D1E24F65C600047E0E5 /* OperationError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OperationError.swift; sourceTree = "<group>"; };
 		582AE30F2440A6CA00E6733A /* AccountTokenInput.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AccountTokenInput.swift; sourceTree = "<group>"; };
 		582AE3112440CA0D00E6733A /* AccountTokenInputTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountTokenInputTests.swift; sourceTree = "<group>"; };
 		582BB1AE229566420055B6EF /* SettingsCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsCell.swift; sourceTree = "<group>"; };
@@ -314,10 +323,13 @@
 		587AD7C523421D7000E93A53 /* TunnelSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TunnelSettings.swift; sourceTree = "<group>"; };
 		587AD7C92342283900E93A53 /* Account.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Account.swift; sourceTree = "<group>"; };
 		587CBFE222807F530028DED3 /* UIColor+Helpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Helpers.swift"; sourceTree = "<group>"; };
+		5880B9C924EE733A00173CE4 /* GroupOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupOperation.swift; sourceTree = "<group>"; };
 		588534BD246193C00018B744 /* AutomaticKeyRotationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutomaticKeyRotationManager.swift; sourceTree = "<group>"; };
 		5888AD7E2279B6BF0051EB06 /* RelayStatusIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RelayStatusIndicatorView.swift; sourceTree = "<group>"; };
 		5888AD82227B11080051EB06 /* SelectLocationCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectLocationCell.swift; sourceTree = "<group>"; };
 		5888AD86227B17950051EB06 /* SelectLocationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectLocationController.swift; sourceTree = "<group>"; };
+		588FBBAB24F7C4B400FFF071 /* MergeOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MergeOperation.swift; sourceTree = "<group>"; };
+		588FBBAC24F7C4B400FFF071 /* MergeResultOperation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MergeResultOperation.swift; sourceTree = "<group>"; };
 		58906DDF2445C7A5002F0673 /* NEProviderStopReason+Debug.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NEProviderStopReason+Debug.swift"; sourceTree = "<group>"; };
 		58907D9424D17B4E00CFC3F5 /* DisconnectSplitButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisconnectSplitButton.swift; sourceTree = "<group>"; };
 		5894E725236B2801008A2793 /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
@@ -452,8 +464,12 @@
 				58E973DD24850EB600096F90 /* AsyncOperation.swift */,
 				580EE20B24B3225F00F9D8A1 /* DelayOperation.swift */,
 				580EE20524B3222200F9D8A1 /* ExclusivityController.swift */,
+				5880B9C924EE733A00173CE4 /* GroupOperation.swift */,
 				580EE21A24B3236900F9D8A1 /* InputOperation.swift */,
+				588FBBAB24F7C4B400FFF071 /* MergeOperation.swift */,
+				588FBBAC24F7C4B400FFF071 /* MergeResultOperation.swift */,
 				580EE21424B3231200F9D8A1 /* OperationBlockObserver.swift */,
+				58283D1E24F65C600047E0E5 /* OperationError.swift */,
 				580EE20324B321EC00F9D8A1 /* OperationObserver.swift */,
 				580EE20024B321D500F9D8A1 /* OperationProtocol.swift */,
 				580EE21D24B3237F00F9D8A1 /* OutputOperation.swift */,
@@ -980,6 +996,7 @@
 				58F19E35228C15BA00C7710B /* SpinnerActivityIndicatorView.swift in Sources */,
 				58A99ED3240014A0006599E9 /* ConsentViewController.swift in Sources */,
 				58FAEE0124533A9C00CB0F5B /* KeychainClass.swift in Sources */,
+				5880B9CA24EE733A00173CE4 /* GroupOperation.swift in Sources */,
 				58CCA0162242560B004F3011 /* UIColor+Palette.swift in Sources */,
 				58AEEF6B2344A46200C9BBD5 /* TunnelSettingsManager.swift in Sources */,
 				587CBFE322807F530028DED3 /* UIColor+Helpers.swift in Sources */,
@@ -998,6 +1015,7 @@
 				58B8743222B25A7600015324 /* WireguardAssociatedAddresses.swift in Sources */,
 				58C6B34F22BB7AC0003C19AD /* IPAddressRange.swift in Sources */,
 				58F3C09C249B99DD003E76BE /* Curve25519.swift in Sources */,
+				588FBBAD24F7C4B400FFF071 /* MergeOperation.swift in Sources */,
 				58DF28A52417CB4B00E836B0 /* AppStorePaymentManager.swift in Sources */,
 				580EE22124B3240100F9D8A1 /* TransformOperationObserver.swift in Sources */,
 				582BB1AF229566420055B6EF /* SettingsCell.swift in Sources */,
@@ -1015,7 +1033,9 @@
 				5877152E23981C5B001F8237 /* SettingsBasicCell.swift in Sources */,
 				58FD5BE724192A2C00112C88 /* AppStoreReceipt.swift in Sources */,
 				5835B7CC233B76CB0096D79F /* TunnelManager.swift in Sources */,
+				58283D1F24F65C600047E0E5 /* OperationError.swift in Sources */,
 				5815039724D6ECAE00C9C50E /* CustomFormatLogHandler.swift in Sources */,
+				588FBBAE24F7C4B400FFF071 /* MergeResultOperation.swift in Sources */,
 				5815039D24D6ECE600C9C50E /* TextFileOutputStream.swift in Sources */,
 				581CBCEE229826FD00727D7F /* StaticTableViewDataSource.swift in Sources */,
 				58CE5E64224146200008646E /* AppDelegate.swift in Sources */,
@@ -1074,10 +1094,12 @@
 				58F3C0962492617E003E76BE /* AsyncOperation.swift in Sources */,
 				580EE22924B3289300F9D8A1 /* AssociatedValue.swift in Sources */,
 				58AEEF662344A37400C9BBD5 /* KeychainError.swift in Sources */,
+				5880B9CB24EE733A00173CE4 /* GroupOperation.swift in Sources */,
 				5840250222B1124600E4CFEC /* IpAddress+Codable.swift in Sources */,
 				58BA693223EAE1AE009DC256 /* SimulatorTunnelProvider.swift in Sources */,
 				580EE21924B3235100F9D8A1 /* AnyOperationObserver.swift in Sources */,
 				580EE21324B322FC00F9D8A1 /* ResultOperation.swift in Sources */,
+				588FBBAF24F7C4B800FFF071 /* MergeOperation.swift in Sources */,
 				58C6B36522C10596003C19AD /* AnyIPEndpoint+Wireguard.swift in Sources */,
 				58CE5E7C224146470008646E /* PacketTunnelProvider.swift in Sources */,
 				58F3C09A249B9852003E76BE /* x25519.c in Sources */,
@@ -1088,6 +1110,7 @@
 				5860F1C223A785C600CEA666 /* WireguardDevice.swift in Sources */,
 				580EE21624B3231200F9D8A1 /* OperationBlockObserver.swift in Sources */,
 				58CC40F024A602780019D96E /* ObserverList.swift in Sources */,
+				58283D2024F65E7A0047E0E5 /* OperationError.swift in Sources */,
 				58C6B35522BB87C4003C19AD /* WireguardPrivateKey.swift in Sources */,
 				581503A724D6F4AE00C9C50E /* Logging.swift in Sources */,
 				58FAEE0424533AC000CB0F5B /* KeychainClass.swift in Sources */,
@@ -1109,6 +1132,7 @@
 				58561C9A239A5D1500BD6B5E /* IPEndpoint.swift in Sources */,
 				580EE22524B3243100F9D8A1 /* AsyncBlockOperation.swift in Sources */,
 				580EE20D24B3225F00F9D8A1 /* DelayOperation.swift in Sources */,
+				588FBBB024F7C4B800FFF071 /* MergeResultOperation.swift in Sources */,
 				588534BF246193D90018B744 /* AutomaticKeyRotationManager.swift in Sources */,
 				58781CCE22AE8918009B9D8E /* RelayConstraints.swift in Sources */,
 				581503A024D6F01E00C9C50E /* LogRotation.swift in Sources */,

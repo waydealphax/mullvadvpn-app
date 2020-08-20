@@ -9,29 +9,54 @@
 import Foundation
 
 class OperationBlockObserver<OperationType: OperationProtocol>: OperationObserver {
-    private var willFinish: ((OperationType) -> Void)?
-    private var didFinish: ((OperationType) -> Void)?
+    private var willExecute: ((OperationType) -> Void)?
+    private var didExecute: ((OperationType) -> Void)?
+    private var willFinish: ((OperationType, Error?) -> Void)?
+    private var didFinish: ((OperationType, Error?) -> Void)?
 
     let queue: DispatchQueue?
 
-    init(queue: DispatchQueue? = nil, willFinish: ((OperationType) -> Void)? = nil, didFinish: ((OperationType) -> Void)? = nil) {
+    init(queue: DispatchQueue? = nil,
+         willExecute: ((OperationType) -> Void)? = nil,
+         didExecute: ((OperationType) -> Void)? = nil,
+         willFinish: ((OperationType, Error?) -> Void)? = nil,
+         didFinish: ((OperationType, Error?) -> Void)? = nil
+    ) {
         self.queue = queue
+        self.willExecute = willExecute
+        self.didExecute = didExecute
         self.willFinish = willFinish
         self.didFinish = didFinish
     }
 
-    func operationWillFinish(_ operation: OperationType) {
-        if let willFinish = self.willFinish {
+    func operationWillExecute(_ operation: OperationType) {
+        if let willExecute = self.willExecute {
             scheduleEvent {
-                willFinish(operation)
+                willExecute(operation)
             }
         }
     }
 
-    func operationDidFinish(_ operation: OperationType) {
+    func operationDidExecute(_ operation: OperationType) {
+        if let didExecute = self.didExecute {
+            scheduleEvent {
+                didExecute(operation)
+            }
+        }
+    }
+
+    func operationWillFinish(_ operation: OperationType, error: Error?) {
+        if let willFinish = self.willFinish {
+            scheduleEvent {
+                willFinish(operation, error)
+            }
+        }
+    }
+
+    func operationDidFinish(_ operation: OperationType, error: Error?) {
         if let didFinish = self.didFinish {
             scheduleEvent {
-                didFinish(operation)
+                didFinish(operation, error)
             }
         }
     }
@@ -46,7 +71,20 @@ class OperationBlockObserver<OperationType: OperationProtocol>: OperationObserve
 }
 
 extension OperationProtocol {
-    func addDidFinishBlockObserver(queue: DispatchQueue? = nil, _ block: @escaping (Self) -> Void) {
+
+    func addWillExecuteBlockObserver(queue: DispatchQueue? = nil, _ block: @escaping (Self) -> Void) {
+        addObserver(OperationBlockObserver(queue: queue, willExecute: block))
+    }
+
+    func addDidExecuteBlockObserver(queue: DispatchQueue? = nil, _ block: @escaping (Self) -> Void) {
+        addObserver(OperationBlockObserver(queue: queue, didExecute: block))
+    }
+
+    func addWillFinishBlockObserver(queue: DispatchQueue? = nil, _ block: @escaping (Self, Error?) -> Void) {
+        addObserver(OperationBlockObserver(queue: queue, willFinish: block))
+    }
+
+    func addDidFinishBlockObserver(queue: DispatchQueue? = nil, _ block: @escaping (Self, Error?) -> Void) {
         addObserver(OperationBlockObserver(queue: queue, didFinish: block))
     }
 }
