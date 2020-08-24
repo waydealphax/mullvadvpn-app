@@ -108,6 +108,7 @@ class ApplicationMain {
     relaySettings: {
       normal: {
         location: 'any',
+        provider: '',
         tunnelProtocol: 'any',
         openvpnConstraints: {
           port: 'any',
@@ -121,6 +122,7 @@ class ApplicationMain {
     bridgeSettings: {
       normal: {
         location: 'any',
+        provider: '',
       },
     },
     bridgeState: 'auto',

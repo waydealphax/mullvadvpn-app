@@ -134,6 +134,7 @@ export type TunnelProtocol = 'wireguard' | 'openvpn';
 
 interface IRelaySettingsNormal<OpenVpn, Wireguard> {
   location: Constraint<RelayLocation>;
+  provider: string;
   tunnelProtocol: Constraint<TunnelProtocol>;
   openvpnConstraints: OpenVpn;
   wireguardConstraints: Wireguard;
@@ -212,6 +213,7 @@ export interface IRelayListCity {
 
 export interface IRelayListHostname {
   hostname: string;
+  provider: string;
   ipv4AddrIn: string;
   includeInCountry: boolean;
   active: boolean;
@@ -320,6 +322,7 @@ export type BridgeState = 'auto' | 'on' | 'off';
 
 export interface IBridgeConstraints {
   location: Constraint<RelayLocation>;
+  provider: string;
 }
 
 export type BridgeSettings = { normal: IBridgeConstraints } | { custom: ProxySettings };

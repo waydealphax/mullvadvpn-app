@@ -9,6 +9,7 @@ export default class BridgeSettingsBuilder {
       return {
         normal: {
           location: this.payload.location,
+          provider: this.payload.provider ?? '',
         },
       };
     } else {

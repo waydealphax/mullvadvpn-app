@@ -898,6 +898,7 @@ function convertFromRelaySettings(
         const location = grpcLocation
           ? { only: convertFromLocation(grpcLocation.toObject()) }
           : 'any';
+        const provider = normal.getProvider();
         const tunnelProtocol = convertFromTunnelTypeConstraint(normal.getTunnelType()!);
         const openvpnConstraints = convertFromOpenVpnConstraints(normal.getOpenvpnConstraints()!);
         const wireguardConstraints = convertFromWireguardConstraints(
@@ -907,6 +908,7 @@ function convertFromRelaySettings(
         return {
           normal: {
             location,
+            provider,
             tunnelProtocol,
             wireguardConstraints,
             openvpnConstraints,
@@ -926,9 +928,11 @@ function convertFromBridgeSettings(
   if (normalSettings) {
     const grpcLocation = normalSettings.location;
     const location = grpcLocation ? { only: convertFromLocation(grpcLocation) } : 'any';
+    const provider = normalSettings.provider;
     return {
       normal: {
         location,
+        provider,
       },
     };
   }
