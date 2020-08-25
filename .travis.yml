@@ -20,9 +20,11 @@ matrix:
         - node --version
         - cd gui
         - npm ci --no-optional
-      script: &node_script
+      build: &node_build
         - npm run lint
         - npm run build
+      script: &node_script
+        - *node_build
         - npm test
 
     - os: windows
@@ -35,7 +37,7 @@ matrix:
         # https://travis-ci.community/t/command-npm-i-g-npm-latest-fails/431/5
         - node `npm prefix -g`/node_modules/npm/bin/npm-cli.js i -g npm@latest
       install: *node_install
-      script: *node_script
+      script: *node_build
 
     # Android
     - language: android
@@ -156,9 +158,6 @@ matrix:
       language: shell
       before_install: *rust_windows_before_install
       script: *rust_windows_script
-
-  allow_failures:
-    - name: Desktop Frontend, Windows
 
 notifications:
   email:
