@@ -412,8 +412,8 @@ class PacketTunnelProvider: NEPacketTunnelProvider {
             }
         }
 
-        operation.addDidFinishBlockObserver(queue: dispatchQueue) { (operation, result) in
-            completionHandler(result)
+        operation.addDidFinishBlockObserver(queue: dispatchQueue) { (operation, error) in
+            completionHandler(operation.output.value!)
         }
 
         exclusivityController.addOperation(operation, categories: [.exclusive])
