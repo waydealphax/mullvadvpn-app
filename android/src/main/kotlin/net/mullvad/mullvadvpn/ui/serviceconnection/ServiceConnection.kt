@@ -23,7 +23,7 @@ class ServiceConnection(private val service: ServiceInstance, val mainActivity: 
     val customDns = service.customDns
     val keyStatusListener = service.keyStatusListener
     val locationInfoCache = service.locationInfoCache
-    val settingsListener = service.settingsListener
+    val settingsListener = SettingsListener(dispatcher)
     val splitTunneling = service.splitTunneling
 
     val appVersionInfoCache = AppVersionInfoCache(mainActivity, daemon, settingsListener)
@@ -37,6 +37,8 @@ class ServiceConnection(private val service: ServiceInstance, val mainActivity: 
 
     fun onDestroy() {
         dispatcher.onDestroy()
+
+        settingsListener.onDestroy()
 
         appVersionInfoCache.onDestroy()
         relayListListener.onDestroy()
