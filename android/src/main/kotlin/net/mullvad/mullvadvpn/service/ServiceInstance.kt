@@ -2,7 +2,6 @@ package net.mullvad.mullvadvpn.service
 
 import android.os.Messenger
 import net.mullvad.mullvadvpn.service.endpoint.AccountCache
-import net.mullvad.mullvadvpn.service.endpoint.KeyStatusListener
 import net.mullvad.mullvadvpn.service.endpoint.SettingsListener
 import net.mullvad.mullvadvpn.util.Intermittent
 
@@ -12,7 +11,6 @@ class ServiceInstance(
     val intermittentDaemon: Intermittent<MullvadDaemon>,
     val connectionProxy: ConnectionProxy,
     val customDns: CustomDns,
-    val keyStatusListener: KeyStatusListener,
     val settingsListener: SettingsListener,
     val splitTunneling: SplitTunneling
 ) {
@@ -22,6 +20,5 @@ class ServiceInstance(
         accountCache.onDestroy()
         connectionProxy.onDestroy()
         customDns.onDestroy()
-        keyStatusListener.onDestroy()
     }
 }
