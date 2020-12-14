@@ -89,6 +89,7 @@ class ServiceEndpoint(
         listener.apply {
             send(Event.SettingsUpdate(settingsListener.settings).message)
             send(Event.NewLocation(locationInfoCache.location).message)
+            send(Event.WireGuardKeyStatus(keyStatusListener.keyStatus).message)
             send(Event.ListenerReady().message)
         }
     }
