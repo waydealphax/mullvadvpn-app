@@ -48,6 +48,9 @@ class MullvadVpnService : TalpidVpnService() {
     private val binder = LocalBinder()
     private val serviceNotifier = EventNotifier<ServiceInstance?>(null)
 
+    private val connectionProxy
+        get() = endpoint.connectionProxy
+
     private var state = State.Running
 
     private var setUpDaemonJob: Job? = null
@@ -76,13 +79,11 @@ class MullvadVpnService : TalpidVpnService() {
     private lateinit var tunnelStateUpdater: TunnelStateUpdater
 
     private var pendingAction by observable<PendingAction?>(null) { _, _, _ ->
-        val connectionProxy = instance?.connectionProxy
-
         // The service instance awaits the split tunneling initialization, which also starts the
         // endpoint. So if the instance is not null, the endpoint has certainly been initialized.
-        if (connectionProxy != null) {
+        if (instance != null) {
             endpoint.settingsListener.settings?.let { settings ->
-                handlePendingAction(connectionProxy, settings)
+                handlePendingAction(settings)
             }
         }
     }
@@ -229,7 +230,6 @@ class MullvadVpnService : TalpidVpnService() {
     }
 
     private suspend fun setUpInstance(daemon: MullvadDaemon, settings: Settings) {
-        val connectionProxy = ConnectionProxy(this, daemonInstance.intermittentDaemon)
         val customDns = CustomDns(daemon, endpoint.settingsListener)
 
         endpoint.splitTunneling.onChange.subscribe(this@MullvadVpnService) { excludedApps ->
@@ -238,7 +238,7 @@ class MullvadVpnService : TalpidVpnService() {
             connectionProxy.reconnect()
         }
 
-        handlePendingAction(connectionProxy, settings)
+        handlePendingAction(settings)
 
         endpoint.locationInfoCache.stateEvents = connectionProxy.onStateChange
 
@@ -275,7 +275,7 @@ class MullvadVpnService : TalpidVpnService() {
         }
     }
 
-    private fun handlePendingAction(connectionProxy: ConnectionProxy, settings: Settings) {
+    private fun handlePendingAction(settings: Settings) {
         when (pendingAction) {
             PendingAction.Connect -> {
                 if (settings.accountToken != null) {
