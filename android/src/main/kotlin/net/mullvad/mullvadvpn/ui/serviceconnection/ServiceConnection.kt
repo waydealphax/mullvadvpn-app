@@ -20,13 +20,13 @@ class ServiceConnection(private val service: ServiceInstance, val mainActivity: 
     val daemon = service.daemon
     val accountCache = AccountCache(service.messenger, dispatcher)
     val connectionProxy = ConnectionProxy(service.messenger, dispatcher)
-    val customDns = service.customDns
     val keyStatusListener = KeyStatusListener(service.messenger, dispatcher)
     val locationInfoCache = LocationInfoCache(dispatcher)
     val settingsListener = SettingsListener(dispatcher)
     val splitTunneling = SplitTunneling(service.messenger, dispatcher)
 
     val appVersionInfoCache = AppVersionInfoCache(mainActivity, daemon, settingsListener)
+    val customDns = CustomDns(service.messenger, settingsListener)
     var relayListListener = RelayListListener(daemon, settingsListener)
 
     init {
@@ -44,6 +44,7 @@ class ServiceConnection(private val service: ServiceInstance, val mainActivity: 
         settingsListener.onDestroy()
 
         appVersionInfoCache.onDestroy()
+        customDns.onDestroy()
         relayListListener.onDestroy()
     }
 
