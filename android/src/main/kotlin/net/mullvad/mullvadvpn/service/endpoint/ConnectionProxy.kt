@@ -12,6 +12,7 @@ import kotlinx.coroutines.channels.actor
 import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import net.mullvad.mullvadvpn.ipc.Event
 import net.mullvad.mullvadvpn.model.TunnelState
 import net.mullvad.mullvadvpn.ui.MainActivity
 import net.mullvad.mullvadvpn.util.Intermittent
@@ -51,6 +52,10 @@ class ConnectionProxy(val context: Context, endpoint: ServiceEndpoint) {
     init {
         daemon.registerListener(this) { newDaemon ->
             newDaemon?.onTunnelStateChange = { newState -> handleNewState(newState) }
+        }
+
+        onStateChange.subscribe(this) { tunnelState ->
+            endpoint.sendEvent(Event.TunnelStateChange(tunnelState))
         }
     }
 
