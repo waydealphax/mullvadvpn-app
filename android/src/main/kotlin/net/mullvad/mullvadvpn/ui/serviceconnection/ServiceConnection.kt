@@ -12,7 +12,7 @@ import net.mullvad.mullvadvpn.ipc.Request
 import net.mullvad.mullvadvpn.service.ServiceInstance
 import net.mullvad.mullvadvpn.ui.MainActivity
 
-class ServiceConnection(val service: ServiceInstance, val mainActivity: MainActivity) {
+class ServiceConnection(private val service: ServiceInstance, val mainActivity: MainActivity) {
     val dispatcher = DispatchingHandler(Looper.getMainLooper()) { message ->
         Event.fromMessage(message)
     }
@@ -31,7 +31,6 @@ class ServiceConnection(val service: ServiceInstance, val mainActivity: MainActi
 
     init {
         appVersionInfoCache.onCreate()
-        service.connectionProxy.mainActivity = mainActivity
         registerListener()
     }
 
@@ -46,7 +45,6 @@ class ServiceConnection(val service: ServiceInstance, val mainActivity: MainActi
 
         appVersionInfoCache.onDestroy()
         relayListListener.onDestroy()
-        service.connectionProxy.mainActivity = null
     }
 
     private fun registerListener() {
