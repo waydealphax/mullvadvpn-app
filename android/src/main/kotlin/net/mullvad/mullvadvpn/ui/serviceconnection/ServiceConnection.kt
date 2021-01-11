@@ -16,6 +16,7 @@ class ServiceConnection(private val service: ServiceInstance) {
 
     val daemon = service.daemon
     val accountCache = AccountCache(service.messenger, dispatcher)
+    val authTokenCache = AuthTokenCache(service.messenger, dispatcher)
     val connectionProxy = ConnectionProxy(service.messenger, dispatcher)
     val keyStatusListener = KeyStatusListener(service.messenger, dispatcher)
     val locationInfoCache = LocationInfoCache(dispatcher)
@@ -34,6 +35,7 @@ class ServiceConnection(private val service: ServiceInstance) {
         dispatcher.onDestroy()
 
         accountCache.onDestroy()
+        authTokenCache.onDestroy()
         connectionProxy.onDestroy()
         keyStatusListener.onDestroy()
         locationInfoCache.onDestroy()
