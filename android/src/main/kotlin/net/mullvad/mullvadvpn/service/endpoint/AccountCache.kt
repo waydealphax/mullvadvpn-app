@@ -1,7 +1,8 @@
-package net.mullvad.mullvadvpn.service
+package net.mullvad.mullvadvpn.service.endpoint
 
 import kotlinx.coroutines.delay
 import net.mullvad.mullvadvpn.model.GetAccountDataResult
+import net.mullvad.mullvadvpn.service.MullvadDaemon
 import net.mullvad.mullvadvpn.util.ExponentialBackoff
 import net.mullvad.mullvadvpn.util.JobTracker
 import net.mullvad.talpid.util.EventNotifier

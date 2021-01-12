@@ -1,6 +1,8 @@
 package net.mullvad.mullvadvpn.service
 
 import android.os.Messenger
+import net.mullvad.mullvadvpn.service.endpoint.AccountCache
+import net.mullvad.mullvadvpn.service.endpoint.SettingsListener
 import net.mullvad.talpid.ConnectivityListener
 
 class ServiceInstance(
@@ -22,6 +24,5 @@ class ServiceInstance(
         customDns.onDestroy()
         keyStatusListener.onDestroy()
         locationInfoCache.onDestroy()
-        settingsListener.onDestroy()
     }
 }

@@ -7,14 +7,14 @@ import android.view.ViewGroup
 import net.mullvad.mullvadvpn.R
 import net.mullvad.mullvadvpn.dataproxy.AppVersionInfoCache
 import net.mullvad.mullvadvpn.dataproxy.RelayListListener
-import net.mullvad.mullvadvpn.service.AccountCache
 import net.mullvad.mullvadvpn.service.ConnectionProxy
 import net.mullvad.mullvadvpn.service.CustomDns
 import net.mullvad.mullvadvpn.service.KeyStatusListener
 import net.mullvad.mullvadvpn.service.LocationInfoCache
 import net.mullvad.mullvadvpn.service.MullvadDaemon
-import net.mullvad.mullvadvpn.service.SettingsListener
 import net.mullvad.mullvadvpn.service.SplitTunneling
+import net.mullvad.mullvadvpn.service.endpoint.AccountCache
+import net.mullvad.mullvadvpn.service.endpoint.SettingsListener
 
 abstract class ServiceDependentFragment(val onNoService: OnNoService) : ServiceAwareFragment() {
     enum class OnNoService {
