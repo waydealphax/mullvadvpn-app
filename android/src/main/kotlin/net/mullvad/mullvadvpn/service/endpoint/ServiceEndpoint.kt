@@ -43,6 +43,7 @@ class ServiceEndpoint(
     val locationInfoCache = LocationInfoCache(this)
     val relayListListener = RelayListListener(this)
     val splitTunneling = SplitTunneling(context, this)
+    val voucherRedeemer = VoucherRedeemer(this)
 
     init {
         dispatcher.registerHandler(Request.RegisterListener::class) { request ->
@@ -64,6 +65,7 @@ class ServiceEndpoint(
         relayListListener.onDestroy()
         settingsListener.onDestroy()
         splitTunneling.onDestroy()
+        voucherRedeemer.onDestroy()
     }
 
     internal fun sendEvent(event: Event) {
