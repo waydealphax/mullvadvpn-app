@@ -209,9 +209,7 @@ class ApplicationMain {
       app.commandLine.appendSwitch('wm-window-animations-disabled');
     }
 
-    if (process.platform !== 'linux') {
-      app.enableSandbox();
-    }
+    app.enableSandbox();
 
     this.overrideAppPaths();
 
@@ -1453,7 +1451,7 @@ class ApplicationMain {
         nodeIntegrationInWorker: false,
         nodeIntegrationInSubFrames: false,
         enableRemoteModule: false,
-        sandbox: process.platform !== 'linux',
+        sandbox: true,
         contextIsolation: true,
         spellcheck: false,
         devTools: process.env.NODE_ENV === 'development',

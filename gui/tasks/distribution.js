@@ -235,23 +235,6 @@ function packLinux() {
     targets: builder.Platform.LINUX.createTarget(),
     config: {
       ...config,
-      afterPack: (context) => {
-        const sourceExecutable = path.join(context.appOutDir, 'mullvad-vpn');
-        const targetExecutable = path.join(context.appOutDir, 'mullvad-gui');
-        const launcherScript = path.join(context.appOutDir, 'mullvad-gui-launcher.sh');
-        const chromeSandbox = path.join(context.appOutDir, 'chrome-sandbox');
-
-        return Promise.all([
-          // rename mullvad-vpn to mullvad-gui
-          renameAsync(sourceExecutable, targetExecutable),
-
-          // rename launcher script to mullvad-vpn
-          renameAsync(launcherScript, sourceExecutable),
-
-          // remove the chrome-sandbox file since we explicitly disable it
-          unlinkAsync(chromeSandbox),
-        ]);
-      },
     },
   });
 }
