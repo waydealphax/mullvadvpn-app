@@ -9,9 +9,8 @@ import net.mullvad.mullvadvpn.ipc.DispatchingHandler
 import net.mullvad.mullvadvpn.ipc.Event
 import net.mullvad.mullvadvpn.ipc.Request
 import net.mullvad.mullvadvpn.service.ServiceInstance
-import net.mullvad.mullvadvpn.ui.MainActivity
 
-class ServiceConnection(private val service: ServiceInstance, val mainActivity: MainActivity) {
+class ServiceConnection(private val service: ServiceInstance) {
     val dispatcher = DispatchingHandler(Looper.getMainLooper()) { message ->
         Event.fromMessage(message)
     }
@@ -24,12 +23,11 @@ class ServiceConnection(private val service: ServiceInstance, val mainActivity: 
     val settingsListener = SettingsListener(dispatcher)
     val splitTunneling = SplitTunneling(service.messenger, dispatcher)
 
-    val appVersionInfoCache = AppVersionInfoCache(mainActivity, dispatcher, settingsListener)
+    val appVersionInfoCache = AppVersionInfoCache(dispatcher, settingsListener)
     val customDns = CustomDns(service.messenger, settingsListener)
     var relayListListener = RelayListListener(daemon, settingsListener)
 
     init {
-        appVersionInfoCache.onCreate()
         registerListener()
     }
 

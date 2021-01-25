@@ -55,7 +55,7 @@ class MainActivity : FragmentActivity() {
                 serviceConnection?.onDestroy()
 
                 val newConnection = service?.let { safeService ->
-                    ServiceConnection(safeService, this@MainActivity)
+                    ServiceConnection(safeService)
                 }
 
                 serviceConnection = newConnection
