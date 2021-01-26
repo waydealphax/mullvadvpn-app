@@ -86,6 +86,7 @@ pub async fn spawn(
     shutdown_tx: oneshot::Sender<()>,
     reset_firewall: bool,
     #[cfg(target_os = "android")] android_context: AndroidContext,
+    #[cfg(target_os = "macos")] allow_apple_traffic: bool,
 ) -> Result<Arc<mpsc::UnboundedSender<TunnelCommand>>, Error> {
     let (command_tx, command_rx) = mpsc::unbounded();
     let command_tx = Arc::new(command_tx);
@@ -127,6 +128,8 @@ pub async fn spawn(
             cache_dir,
             command_rx,
             reset_firewall,
+            #[cfg(target_os = "macos")]
+            allow_apple_traffic,
         );
         let state_machine = match state_machine {
             Ok(state_machine) => {
@@ -176,6 +179,9 @@ pub enum TunnelCommand {
     /// Bypass a socket, allowing traffic to flow through outside the tunnel.
     #[cfg(target_os = "android")]
     BypassSocket(RawFd, oneshot::Sender<()>),
+    /// Toggle bypassing of Apple traffic
+    #[cfg(target_os = "macos")]
+    AllowAppleTraffic(bool),
 }
 
 type TunnelCommandReceiver = stream::Fuse<mpsc::UnboundedReceiver<TunnelCommand>>;
@@ -213,6 +219,7 @@ impl TunnelStateMachine {
         cache_dir: impl AsRef<Path>,
         commands: mpsc::UnboundedReceiver<TunnelCommand>,
         reset_firewall: bool,
+        #[cfg(target_os = "macos")] allow_apple_traffic: bool,
     ) -> Result<Self, Error> {
         let args = FirewallArguments {
             initialize_blocked: block_when_disconnected || !reset_firewall,
@@ -239,6 +246,8 @@ impl TunnelStateMachine {
             resource_dir,
             #[cfg(target_os = "linux")]
             connectivity_check_was_enabled: None,
+            #[cfg(target_os = "macos")]
+            allow_apple_traffic,
         };
 
         let (initial_state, _) = DisconnectedState::enter(&mut shared_values, reset_firewall);
@@ -320,6 +329,10 @@ struct SharedTunnelStateValues {
     /// NetworkManager's connecitivity check state.
     #[cfg(target_os = "linux")]
     connectivity_check_was_enabled: Option<bool>,
+
+    /// Should apple traffic be allowed to pass the firewall at all times
+    #[cfg(target_os = "macos")]
+    allow_apple_traffic: bool,
 }
 
 impl SharedTunnelStateValues {

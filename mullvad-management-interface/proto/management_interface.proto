@@ -40,6 +40,7 @@ service ManagementService {
 	rpc SetWireguardMtu(google.protobuf.UInt32Value) returns (google.protobuf.Empty) {}
 	rpc SetEnableIpv6(google.protobuf.BoolValue) returns (google.protobuf.Empty) {}
 	rpc SetDnsOptions(DnsOptions) returns (google.protobuf.Empty) {}
+	rpc SetAllowAppleTraffic(google.protobuf.BoolValue) returns (google.protobuf.Empty) {}
 
 	// Account management
 	rpc CreateNewAccount(google.protobuf.Empty) returns (google.protobuf.StringValue) {}
@@ -256,6 +257,7 @@ message Settings {
 	bool auto_connect = 7;
 	TunnelOptions tunnel_options = 8;
 	bool show_beta_releases = 9;
+	bool allow_apple_traffic = 10;
 }
 
 message RelaySettings {

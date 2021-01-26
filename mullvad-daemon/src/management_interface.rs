@@ -342,6 +342,21 @@ impl ManagementService for ManagementServiceImpl {
             .map_err(|_| Status::internal("internal error"))
     }
 
+    #[cfg(target_os = "macos")]
+    async fn set_allow_apple_traffic(&self, request: Request<bool>) -> ServiceResult<()> {
+        let allow_apple_traffic = request.into_inner();
+        log::debug!("set_allow_apple_traffic({})", allow_apple_traffic);
+        let (tx, rx) = oneshot::channel();
+        self.send_command_to_daemon(DaemonCommand::SetAllowAppleTraffic(tx, allow_apple_traffic))?;
+        rx.await
+            .map(Response::new)
+            .map_err(|_| Status::internal("internal error"))
+    }
+    #[cfg(not(target_os = "macos"))]
+    async fn set_allow_apple_traffic(&self, request: Request<bool>) -> ServiceResult<()> {
+        Ok(Response::new(()))
+    }
+
     async fn set_show_beta_releases(&self, request: Request<bool>) -> ServiceResult<()> {
         let enabled = request.into_inner();
         log::debug!("set_show_beta_releases({})", enabled);
@@ -740,6 +755,10 @@ fn convert_settings(settings: &Settings) -> types::Settings {
         auto_connect: settings.auto_connect,
         tunnel_options: Some(convert_tunnel_options(&settings.tunnel_options)),
         show_beta_releases: settings.show_beta_releases,
+        #[cfg(target_os = "macos")]
+        allow_apple_traffic: settings.allow_apple_traffic,
+        #[cfg(not(target_os = "macos"))]
+        allow_apple_traffic: false,
     }
 }
 

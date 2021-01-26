@@ -51,6 +51,9 @@ pub struct Settings {
     /// Whether to notify users of beta updates.
     #[serde(deserialize_with = "deserialize_show_beta_releases")]
     pub show_beta_releases: bool,
+    /// If the daemon should always allow communication with Apple's network.
+    #[cfg(target_os = "macos")]
+    pub allow_apple_traffic: bool,
     /// Specifies settings schema version
     #[cfg_attr(target_os = "android", jnix(skip))]
     settings_version: migrations::SettingsVersion,
@@ -71,6 +74,8 @@ impl Default for Settings {
             auto_connect: false,
             tunnel_options: TunnelOptions::default(),
             show_beta_releases: false,
+            #[cfg(target_os = "macos")]
+            allow_apple_traffic: true,
             settings_version: migrations::SettingsVersion::V2,
         }
     }

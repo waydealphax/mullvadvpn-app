@@ -59,6 +59,11 @@ impl DisconnectingState {
                     shared_values.bypass_socket(fd, done_tx);
                     AfterDisconnect::Nothing
                 }
+                #[cfg(target_os = "macos")]
+                Some(TunnelCommand::AllowAppleTraffic(allow_apple_traffic)) => {
+                    shared_values.allow_apple_traffic = allow_apple_traffic;
+                    AfterDisconnect::Nothing
+                }
             },
             AfterDisconnect::Block(reason) => match command {
                 Some(TunnelCommand::AllowLan(allow_lan)) => {
@@ -94,6 +99,11 @@ impl DisconnectingState {
                 #[cfg(target_os = "android")]
                 Some(TunnelCommand::BypassSocket(fd, done_tx)) => {
                     shared_values.bypass_socket(fd, done_tx);
+                    AfterDisconnect::Block(reason)
+                }
+                #[cfg(target_os = "macos")]
+                Some(TunnelCommand::AllowAppleTraffic(allow_apple_traffic)) => {
+                    shared_values.allow_apple_traffic = allow_apple_traffic;
                     AfterDisconnect::Block(reason)
                 }
                 None => AfterDisconnect::Block(reason),
@@ -132,6 +142,11 @@ impl DisconnectingState {
                 #[cfg(target_os = "android")]
                 Some(TunnelCommand::BypassSocket(fd, done_tx)) => {
                     shared_values.bypass_socket(fd, done_tx);
+                    AfterDisconnect::Reconnect(retry_attempt)
+                }
+                #[cfg(target_os = "macos")]
+                Some(TunnelCommand::AllowAppleTraffic(allow_apple_traffic)) => {
+                    shared_values.allow_apple_traffic = allow_apple_traffic;
                     AfterDisconnect::Reconnect(retry_attempt)
                 }
             },

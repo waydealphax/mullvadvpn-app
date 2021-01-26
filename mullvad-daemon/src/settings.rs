@@ -178,6 +178,13 @@ impl SettingsPersister {
         self.update(should_save)
     }
 
+    #[cfg(target_os = "macos")]
+    pub fn set_allow_apple_traffic(&mut self, allow_apple_traffic: bool) -> Result<bool, Error> {
+        let should_save =
+            Self::update_field(&mut self.settings.allow_apple_traffic, allow_apple_traffic);
+        self.update(should_save)
+    }
+
     pub fn set_block_when_disconnected(
         &mut self,
         block_when_disconnected: bool,

@@ -116,6 +116,9 @@ pub enum FirewallPolicy {
         /// root UID.
         #[cfg(target_os = "linux")]
         use_fwmark: bool,
+        /// Flag setting if communication with Apple networks should be possible.
+        #[cfg(target_os = "macos")]
+        allow_apple_traffic: bool,
     },
 
     /// Allow traffic only to server and over tunnel interface
@@ -136,6 +139,9 @@ pub enum FirewallPolicy {
         /// root UID.
         #[cfg(target_os = "linux")]
         use_fwmark: bool,
+        /// Flag setting if communication with Apple networks should be possible.
+        #[cfg(target_os = "macos")]
+        allow_apple_traffic: bool,
     },
 
     /// Block all network traffic in and out from the computer.
@@ -144,6 +150,9 @@ pub enum FirewallPolicy {
         allow_lan: bool,
         /// Host that should be reachable while in the blocked state.
         allowed_endpoint: Endpoint,
+        /// Flag setting if communication with Apple networks should be possible.
+        #[cfg(target_os = "macos")]
+        allow_apple_traffic: bool,
     },
 }
 
@@ -189,6 +198,7 @@ impl fmt::Display for FirewallPolicy {
             FirewallPolicy::Blocked {
                 allow_lan,
                 allowed_endpoint,
+                ..
             } => write!(
                 f,
                 "Blocked. {} LAN. Allowing endpoint {}",

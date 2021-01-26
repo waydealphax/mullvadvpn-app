@@ -22,6 +22,8 @@ impl ErrorState {
         let policy = FirewallPolicy::Blocked {
             allow_lan: shared_values.allow_lan,
             allowed_endpoint: shared_values.allowed_endpoint.clone(),
+            #[cfg(target_os = "macos")]
+            allow_apple_traffic: shared_values.allow_apple_traffic,
         };
 
         #[cfg(target_os = "linux")]
@@ -155,6 +157,11 @@ impl TunnelState for ErrorState {
             #[cfg(target_os = "android")]
             Some(TunnelCommand::BypassSocket(fd, done_tx)) => {
                 shared_values.bypass_socket(fd, done_tx);
+                SameState(self.into())
+            }
+            #[cfg(target_os = "macos")]
+            Some(TunnelCommand::AllowAppleTraffic(allow_apple_traffic)) => {
+                shared_values.allow_apple_traffic = allow_apple_traffic;
                 SameState(self.into())
             }
         }

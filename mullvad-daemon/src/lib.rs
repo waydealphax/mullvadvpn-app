@@ -235,6 +235,9 @@ pub enum DaemonCommand {
     PrepareRestart,
     #[cfg(target_os = "android")]
     BypassSocket(RawFd, oneshot::Sender<()>),
+    /// Set the Allow-Apple-traffic setting
+    #[cfg(target_os = "macos")]
+    SetAllowAppleTraffic(oneshot::Sender<()>, bool),
 }
 
 /// All events that can happen in the daemon. Sent from various threads and exposed interfaces.
@@ -623,6 +626,8 @@ where
             initial_target_state != TargetState::Secured,
             #[cfg(target_os = "android")]
             android_context,
+            #[cfg(target_os = "macos")]
+            settings.allow_apple_traffic,
         )
         .await
         .map_err(Error::TunnelError)?;
@@ -1125,6 +1130,10 @@ where
             PrepareRestart => self.on_prepare_restart(),
             #[cfg(target_os = "android")]
             BypassSocket(fd, tx) => self.on_bypass_socket(fd, tx),
+            #[cfg(target_os = "macos")]
+            SetAllowAppleTraffic(tx, allow_apple_traffic) => {
+                self.on_set_allow_apple_traffic(tx, allow_apple_traffic)
+            }
         }
     }
 
@@ -1605,6 +1614,21 @@ where
         }
     }
 
+    #[cfg(target_os = "macos")]
+    fn on_set_allow_apple_traffic(&mut self, tx: oneshot::Sender<()>, allow_apple_traffic: bool) {
+        let save_result = self.settings.set_allow_apple_traffic(allow_apple_traffic);
+        match save_result {
+            Ok(settings_changed) => {
+                Self::oneshot_send(tx, (), "set_allow_apple_traffic response");
+                if settings_changed {
+                    self.event_listener
+                        .notify_settings(self.settings.to_settings());
+                    self.send_tunnel_command(TunnelCommand::AllowAppleTraffic(allow_apple_traffic));
+                }
+            }
+            Err(e) => error!("{}", e.display_chain_with_msg("Unable to save settings")),
+        }
+    }
     async fn on_set_show_beta_releases(&mut self, tx: oneshot::Sender<()>, enabled: bool) {
         let save_result = self.settings.set_show_beta_releases(enabled);
         match save_result {

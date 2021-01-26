@@ -68,6 +68,8 @@ impl ConnectingState {
             relay_client: TunnelMonitor::get_relay_client(&shared_values.resource_dir, &params),
             #[cfg(target_os = "linux")]
             use_fwmark: params.get_proxy_endpoint().is_none(),
+            #[cfg(target_os = "macos")]
+            allow_apple_traffic: shared_values.allow_apple_traffic,
         };
         shared_values
             .firewall
@@ -287,6 +289,12 @@ impl ConnectingState {
             #[cfg(target_os = "android")]
             Some(TunnelCommand::BypassSocket(fd, done_tx)) => {
                 shared_values.bypass_socket(fd, done_tx);
+                SameState(self.into())
+            }
+
+            #[cfg(target_os = "macos")]
+            Some(TunnelCommand::AllowAppleTraffic(allow_apple_traffic)) => {
+                shared_values.allow_apple_traffic = allow_apple_traffic;
                 SameState(self.into())
             }
         }

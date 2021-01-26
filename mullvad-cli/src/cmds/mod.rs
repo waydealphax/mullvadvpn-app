@@ -42,6 +42,11 @@ mod split_tunnel;
 #[cfg(target_os = "linux")]
 pub use self::split_tunnel::SplitTunnel;
 
+#[cfg(target_os = "macos")]
+mod apple_traffic;
+#[cfg(target_os = "macos")]
+pub use apple_traffic::AppleTraffic;
+
 mod status;
 pub use self::status::Status;
 
@@ -55,6 +60,8 @@ pub use self::version::Version;
 pub fn get_commands() -> HashMap<&'static str, Box<dyn Command>> {
     let commands: Vec<Box<dyn Command>> = vec![
         Box::new(Account),
+        #[cfg(target_os = "macos")]
+        Box::new(AppleTraffic),
         Box::new(AutoConnect),
         Box::new(BetaProgram),
         Box::new(BlockWhenDisconnected),

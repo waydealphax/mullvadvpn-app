@@ -17,6 +17,9 @@ const ANCHOR_NAME: &'static str = "mullvad";
 
 const ROOT_UID: u32 = 0;
 
+const APPLE_SUBNET_IP: IpAddr = IpAddr::V4(Ipv4Addr::new(17, 0, 0, 0));
+const APPLE_SUBNET_LEN: u8 = 8;
+
 /// The macOS firewall and DNS implementation.
 pub struct Firewall {
     pf: pfctl::PfCtl,
@@ -100,11 +103,14 @@ impl Firewall {
                 allow_lan,
                 allowed_endpoint,
                 pingable_hosts,
+                allow_apple_traffic,
             } => {
                 let mut rules = vec![self.get_allow_relay_rule(peer_endpoint)?];
                 rules.push(self.get_allowed_endpoint_rule(allowed_endpoint)?);
                 rules.extend(self.get_allow_pingable_hosts(&pingable_hosts)?);
-                rules.extend(self.get_allow_apple_rules()?);
+                if allow_apple_traffic {
+                    rules.extend(self.get_allow_apple_rules()?);
+                }
                 if allow_lan {
                     // Important to block DNS after allow relay rule (so the relay can operate
                     // over port 53) but before allow LAN (so DNS does not leak to the LAN)
@@ -118,6 +124,7 @@ impl Firewall {
                 tunnel,
                 allow_lan,
                 dns_servers,
+                allow_apple_traffic,
             } => {
                 let mut rules = vec![];
 
@@ -132,7 +139,10 @@ impl Firewall {
                 rules.append(&mut self.get_block_dns_rules()?);
 
                 rules.push(self.get_allow_tunnel_rule(tunnel.interface.as_str())?);
-                rules.extend(self.get_allow_apple_rules()?);
+
+                if allow_apple_traffic {
+                    rules.extend(self.get_allow_apple_rules()?);
+                }
 
                 if allow_lan {
                     rules.append(&mut self.get_allow_lan_rules()?);
@@ -143,6 +153,7 @@ impl Firewall {
             FirewallPolicy::Blocked {
                 allow_lan,
                 allowed_endpoint,
+                allow_apple_traffic,
             } => {
                 let mut rules = Vec::new();
                 rules.push(self.get_allowed_endpoint_rule(allowed_endpoint)?);
@@ -150,6 +161,10 @@ impl Firewall {
                     // Important to block DNS before allow LAN (so DNS does not leak to the LAN)
                     rules.append(&mut self.get_block_dns_rules()?);
                     rules.append(&mut self.get_allow_lan_rules()?);
+                }
+
+                if allow_apple_traffic {
+                    rules.extend(self.get_allow_apple_rules()?);
                 }
                 Ok(rules)
             }
@@ -345,7 +360,7 @@ impl Firewall {
     }
 
     fn get_allow_apple_rules(&self) -> Result<Vec<pfctl::FilterRule>> {
-        let apple_subnet = "17.0.0.0/8".parse::<IpNetwork>().unwrap();
+        let apple_subnet = IpNetwork::new(APPLE_SUBNET_IP, APPLE_SUBNET_LEN).unwrap();
         let incoming_rule = self
             .create_rule_builder(FilterRuleAction::Pass)
             .quick(true)
@@ -567,4 +582,12 @@ enum RuleLogging {
     Pass,
     Drop,
     All,
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    fn test_apple_subnet() {
+        IpNetwork::new(APPLE_SUBNET_IP, APPLE_SUBNET_LEN).unwrap();
+    }
 }
