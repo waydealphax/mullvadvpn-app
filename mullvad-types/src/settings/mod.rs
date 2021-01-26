@@ -75,7 +75,7 @@ impl Default for Settings {
             tunnel_options: TunnelOptions::default(),
             show_beta_releases: false,
             #[cfg(target_os = "macos")]
-            allow_apple_traffic: true,
+            allow_apple_traffic: false,
             settings_version: migrations::SettingsVersion::V2,
         }
     }
