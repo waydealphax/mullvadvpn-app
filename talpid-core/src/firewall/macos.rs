@@ -124,7 +124,6 @@ impl Firewall {
                 tunnel,
                 allow_lan,
                 dns_servers,
-                allow_apple_traffic,
             } => {
                 let mut rules = vec![];
 
@@ -139,10 +138,6 @@ impl Firewall {
                 rules.append(&mut self.get_block_dns_rules()?);
 
                 rules.push(self.get_allow_tunnel_rule(tunnel.interface.as_str())?);
-
-                if allow_apple_traffic {
-                    rules.extend(self.get_allow_apple_rules()?);
-                }
 
                 if allow_lan {
                     rules.append(&mut self.get_allow_lan_rules()?);

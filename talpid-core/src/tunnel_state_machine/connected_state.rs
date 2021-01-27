@@ -115,8 +115,6 @@ impl ConnectedState {
             ),
             #[cfg(target_os = "linux")]
             use_fwmark: self.tunnel_parameters.get_proxy_endpoint().is_none(),
-            #[cfg(target_os = "macos")]
-            allow_apple_traffic: shared_values.allow_apple_traffic,
         }
     }
 

@@ -119,7 +119,10 @@ impl TunnelState for DisconnectedState {
             }
             #[cfg(target_os = "macos")]
             Some(TunnelCommand::AllowAppleTraffic(allow_apple_traffic)) => {
-                shared_values.allow_apple_traffic = allow_apple_traffic;
+                if shared_values.allow_apple_traffic != allow_apple_traffic {
+                    shared_values.allow_apple_traffic = allow_apple_traffic;
+                    Self::set_firewall_policy(shared_values, true);
+                }
                 SameState(self.into())
             }
             Some(_) => SameState(self.into()),

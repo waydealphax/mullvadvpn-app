@@ -139,9 +139,6 @@ pub enum FirewallPolicy {
         /// root UID.
         #[cfg(target_os = "linux")]
         use_fwmark: bool,
-        /// Flag setting if communication with Apple networks should be possible.
-        #[cfg(target_os = "macos")]
-        allow_apple_traffic: bool,
     },
 
     /// Block all network traffic in and out from the computer.

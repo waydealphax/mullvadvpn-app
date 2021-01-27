@@ -161,7 +161,12 @@ impl TunnelState for ErrorState {
             }
             #[cfg(target_os = "macos")]
             Some(TunnelCommand::AllowAppleTraffic(allow_apple_traffic)) => {
-                shared_values.allow_apple_traffic = allow_apple_traffic;
+                if shared_values.allow_apple_traffic != allow_apple_traffic {
+                    shared_values.allow_apple_traffic = allow_apple_traffic;
+                    if let Err(err) = Self::set_firewall_policy(shared_values) {
+                        log::error!("{}", err.display_chain_with_msg("Failed to apply firewall policy after receiving a new apple traffic setting"));
+                    }
+                }
                 SameState(self.into())
             }
         }
