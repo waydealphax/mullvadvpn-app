@@ -94,6 +94,8 @@ The following network traffic is allowed or blocked independent of state:
 
 * The app does not look at ICMPv6 type and code headers. So all ICMPv6 is allowed between the
   specified IP networks.
+* The app has a setting _allow apple traffic_, which, when enabled, allows apple traffic to bypass
+  the firewall in the blocked, connecting and disconnecting states.
 
 ### Disconnected
 
