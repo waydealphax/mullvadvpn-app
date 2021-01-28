@@ -1,6 +1,4 @@
 import { GetTextTranslations } from 'gettext-parser';
-import { ICurrentAppVersionInfo } from '../main/index';
-import { IWindowShapeParameters } from '../main/window-controller';
 import { IApplication, ILinuxSplitTunnelingApplication } from '../shared/application-types';
 import {
   AccountToken,

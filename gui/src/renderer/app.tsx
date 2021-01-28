@@ -17,9 +17,8 @@ import versionActions from './redux/version/actions';
 
 import { ICurrentAppVersionInfo } from '../shared/ipc-types';
 import { IApplication, ILinuxSplitTunnelingApplication } from '../shared/application-types';
-import { loadTranslations, messages, relayLocations } from '../shared/gettext';
+import { messages, relayLocations } from '../shared/gettext';
 import { IGuiSettingsState, SYSTEM_PREFERRED_LOCALE_KEY } from '../shared/gui-settings-state';
-import { IpcRendererEventChannel, IRelayListPair } from '../shared/ipc-event-channel';
 import log, { ConsoleOutput } from '../shared/logging';
 import { IRelayListPair } from '../shared/ipc-schema';
 import consumePromise from '../shared/promise';
