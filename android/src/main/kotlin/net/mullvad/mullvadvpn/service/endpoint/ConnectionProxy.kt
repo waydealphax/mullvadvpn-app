@@ -13,6 +13,7 @@ import kotlinx.coroutines.channels.sendBlocking
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.mullvad.mullvadvpn.ipc.Event
+import net.mullvad.mullvadvpn.ipc.Request
 import net.mullvad.mullvadvpn.model.TunnelState
 import net.mullvad.mullvadvpn.ui.MainActivity
 import net.mullvad.mullvadvpn.util.Intermittent
@@ -56,6 +57,12 @@ class ConnectionProxy(val context: Context, endpoint: ServiceEndpoint) {
 
         onStateChange.subscribe(this) { tunnelState ->
             endpoint.sendEvent(Event.TunnelStateChange(tunnelState))
+        }
+
+        endpoint.dispatcher.apply {
+            registerHandler(Request.Connect::class) { _ -> connect() }
+            registerHandler(Request.Reconnect::class) { _ -> reconnect() }
+            registerHandler(Request.Disconnect::class) { _ -> disconnect() }
         }
     }
 
