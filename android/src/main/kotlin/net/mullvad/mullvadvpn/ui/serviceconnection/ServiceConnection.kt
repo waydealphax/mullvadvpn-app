@@ -22,6 +22,7 @@ class ServiceConnection(private val service: ServiceInstance) {
     val locationInfoCache = LocationInfoCache(dispatcher)
     val settingsListener = SettingsListener(service.messenger, dispatcher)
     val splitTunneling = SplitTunneling(service.messenger, dispatcher)
+    val voucherRedeemer = VoucherRedeemer(service.messenger, dispatcher)
 
     val appVersionInfoCache = AppVersionInfoCache(dispatcher, settingsListener)
     val customDns = CustomDns(service.messenger, settingsListener)
@@ -40,6 +41,7 @@ class ServiceConnection(private val service: ServiceInstance) {
         keyStatusListener.onDestroy()
         locationInfoCache.onDestroy()
         settingsListener.onDestroy()
+        voucherRedeemer.onDestroy()
 
         appVersionInfoCache.onDestroy()
         customDns.onDestroy()
