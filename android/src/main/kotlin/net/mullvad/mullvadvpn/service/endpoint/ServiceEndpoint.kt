@@ -3,6 +3,7 @@ package net.mullvad.mullvadvpn.service.endpoint
 import android.os.Looper
 import android.os.Messenger
 import net.mullvad.mullvadvpn.ipc.DispatchingHandler
+import net.mullvad.mullvadvpn.ipc.Event
 import net.mullvad.mullvadvpn.ipc.Request
 import net.mullvad.mullvadvpn.service.MullvadDaemon
 import net.mullvad.mullvadvpn.util.Intermittent
@@ -20,12 +21,20 @@ class ServiceEndpoint(looper: Looper, intermittentDaemon: Intermittent<MullvadDa
 
     init {
         dispatcher.registerHandler(Request.RegisterListener::class) { request ->
-            listeners.add(request.listener)
+            registerListener(request.listener)
         }
     }
 
     fun onDestroy() {
         dispatcher.onDestroy()
         settingsListener.onDestroy()
+    }
+
+    private fun registerListener(listener: Messenger) {
+        listeners.add(listener)
+
+        listener.apply {
+            send(Event.ListenerReady().message)
+        }
     }
 }
