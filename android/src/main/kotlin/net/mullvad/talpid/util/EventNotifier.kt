@@ -16,16 +16,3 @@ class EventNotifier<T>(private val initialValue: T) : EventSubscriber<T>(initial
         notify(newValue)
     }
 }
-
-fun <T> autoSubscribable(id: Any, fallback: T, listener: (T) -> Unit) =
-    observable<EventNotifier<T>?>(null) { _, old, new ->
-        if (old != new) {
-            old?.unsubscribe(id)
-
-            if (new == null) {
-                listener.invoke(fallback)
-            } else {
-                new.subscribe(id, listener)
-            }
-        }
-    }

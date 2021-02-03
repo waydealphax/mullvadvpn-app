@@ -1,5 +1,7 @@
 package net.mullvad.talpid.util
 
+import kotlin.properties.Delegates.observable
+
 // Manages listeners interested in receiving events of type T
 //
 // The listeners subscribe using an ID object. This ID is used later on for unsubscribing. The only
@@ -49,3 +51,16 @@ abstract class EventSubscriber<T>(initialValue: T) {
         }
     }
 }
+
+fun <T> autoSubscribable(id: Any, fallback: T, listener: (T) -> Unit) =
+    observable<EventSubscriber<T>?>(null) { _, old, new ->
+        if (old != new) {
+            old?.unsubscribe(id)
+
+            if (new == null) {
+                listener.invoke(fallback)
+            } else {
+                new.subscribe(id, listener)
+            }
+        }
+    }
