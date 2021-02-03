@@ -1,8 +1,10 @@
 package net.mullvad.mullvadvpn.service
 
+import net.mullvad.mullvadvpn.model.DnsOptions
 import net.mullvad.mullvadvpn.model.RelaySettings
 import net.mullvad.mullvadvpn.model.Settings
 import net.mullvad.talpid.util.EventNotifier
+import net.mullvad.talpid.util.EventSubscriber
 
 class SettingsListener(val daemon: MullvadDaemon, val initialSettings: Settings) {
     var settings: Settings = initialSettings
@@ -15,6 +17,10 @@ class SettingsListener(val daemon: MullvadDaemon, val initialSettings: Settings)
 
     val accountNumberNotifier = EventNotifier(initialSettings.accountToken)
     val dnsOptionsNotifier = EventNotifier(initialSettings.tunnelOptions.dnsOptions)
+
+    val onAccountNumberChange: EventSubscriber<String?> by ::accountNumberNotifier
+    val onDnsOptionsChange: EventSubscriber<DnsOptions> by ::dnsOptionsNotifier
+    val onSettingsChange: EventSubscriber<Settings> by ::settingsNotifier
 
     var onRelaySettingsChange: ((RelaySettings?) -> Unit)? = null
         set(value) {
