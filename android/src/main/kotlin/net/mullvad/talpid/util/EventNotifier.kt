@@ -2,53 +2,14 @@ package net.mullvad.talpid.util
 
 import kotlin.properties.Delegates.observable
 
-// Manages listeners interested in receiving events of type T
+// Implementation of `EventSubscriber` to allow notifying listeners of events
 //
-// The listeners subscribe using an ID object. This ID is used later on for unsubscribing. The only
-// requirement is that the object uses the default implementation of the `hashCode` and `equals`
-// methods inherited from `Any` (or `Object` in Java).
-//
-// If the ID object class (or any of its super-classes) overrides `hashCode` or `equals`,
-// unsubscribe might not work correctly.
-class EventNotifier<T>(private val initialValue: T) {
-    private val listeners = HashMap<Any, (T) -> Unit>()
-
-    var latestEvent = initialValue
-        private set
-
+// Provides a `notify` method that allows notifying all subscribed listeners of an event of type T.
+// It also provides a helper `notifiable` method that returns a property delegate that calls
+// `notify` when the value is set.
+class EventNotifier<T>(private val initialValue: T) : EventSubscriber<T>(initialValue) {
     fun notify(event: T) {
-        synchronized(this) {
-            latestEvent = event
-
-            for (listener in listeners.values) {
-                listener(event)
-            }
-        }
-    }
-
-    fun subscribe(id: Any, listener: (T) -> Unit) {
-        synchronized(this) {
-            listeners.put(id, listener)
-            listener(latestEvent)
-        }
-    }
-
-    fun hasListeners(): Boolean {
-        synchronized(this) {
-            return !listeners.isEmpty()
-        }
-    }
-
-    fun unsubscribe(id: Any) {
-        synchronized(this) {
-            listeners.remove(id)
-        }
-    }
-
-    fun unsubscribeAll() {
-        synchronized(this) {
-            listeners.clear()
-        }
+        notifyListeners(event)
     }
 
     fun notifiable() = observable(latestEvent) { _, _, newValue ->
