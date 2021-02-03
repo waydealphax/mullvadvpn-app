@@ -21,14 +21,14 @@ class CustomDns(val daemon: MullvadDaemon, val settingsListener: SettingsListene
     val onDnsServersChanged = EventNotifier<List<InetAddress>>(emptyList())
 
     init {
-        settingsListener.dnsOptionsNotifier.subscribe(this) { dnsOptions ->
+        settingsListener.onDnsOptionsChange.subscribe(this) { dnsOptions ->
             enabled = dnsOptions.custom
             dnsServers = ArrayList(dnsOptions.addresses)
         }
     }
 
     fun onDestroy() {
-        settingsListener.dnsOptionsNotifier.unsubscribe(this)
+        settingsListener.onDnsOptionsChange.unsubscribe(this)
     }
 
     fun enable() {

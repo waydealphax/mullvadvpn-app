@@ -47,7 +47,7 @@ class PreferencesFragment : ServiceDependentFragment(OnNoService.GoBack) {
             }
         }
 
-        settingsListener.subscribe(this) { settings ->
+        settingsListener.onSettingsChange.subscribe(this) { settings ->
             updateUi(settings)
         }
 
@@ -65,7 +65,7 @@ class PreferencesFragment : ServiceDependentFragment(OnNoService.GoBack) {
 
     override fun onSafelyDestroyView() {
         titleController.onDestroy()
-        settingsListener.unsubscribe(this)
+        settingsListener.onSettingsChange.unsubscribe(this)
     }
 
     private fun boolToSwitchState(pref: Boolean): CellSwitch.State {

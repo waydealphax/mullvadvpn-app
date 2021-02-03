@@ -77,7 +77,7 @@ class ForegroundNotificationManager(
 
     init {
         serviceNotifier.subscribe(this) { newServiceInstance ->
-            accountNumberEvents = newServiceInstance?.settingsListener?.accountNumberNotifier
+            accountNumberEvents = newServiceInstance?.settingsListener?.onAccountNumberChange
             tunnelStateEvents = newServiceInstance?.connectionProxy?.onStateChange
         }
 

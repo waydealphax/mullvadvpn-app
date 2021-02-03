@@ -37,7 +37,7 @@ class AccountCache(val daemon: MullvadDaemon, val settingsListener: SettingsList
     private var oldAccountExpiry: DateTime? = null
 
     init {
-        settingsListener.accountNumberNotifier.subscribe(this) { accountNumber ->
+        settingsListener.onAccountNumberChange.subscribe(this) { accountNumber ->
             handleNewAccountNumber(accountNumber)
         }
     }
@@ -102,7 +102,7 @@ class AccountCache(val daemon: MullvadDaemon, val settingsListener: SettingsList
     }
 
     fun onDestroy() {
-        settingsListener.accountNumberNotifier.unsubscribe(this)
+        settingsListener.onAccountNumberChange.unsubscribe(this)
         jobTracker.cancelAllJobs()
     }
 
