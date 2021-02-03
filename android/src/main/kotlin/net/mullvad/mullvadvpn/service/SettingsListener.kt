@@ -13,10 +13,9 @@ class SettingsListener(val daemon: MullvadDaemon, val initialSettings: Settings)
             field = value
         }
 
+    private val accountNumberNotifier = EventNotifier(initialSettings.accountToken)
+    private val dnsOptionsNotifier = EventNotifier(initialSettings.tunnelOptions.dnsOptions)
     private val settingsNotifier: EventNotifier<Settings> = EventNotifier(settings)
-
-    val accountNumberNotifier = EventNotifier(initialSettings.accountToken)
-    val dnsOptionsNotifier = EventNotifier(initialSettings.tunnelOptions.dnsOptions)
 
     val onAccountNumberChange: EventSubscriber<String?> by ::accountNumberNotifier
     val onDnsOptionsChange: EventSubscriber<DnsOptions> by ::dnsOptionsNotifier
@@ -41,14 +40,6 @@ class SettingsListener(val daemon: MullvadDaemon, val initialSettings: Settings)
 
         accountNumberNotifier.unsubscribeAll()
         settingsNotifier.unsubscribeAll()
-    }
-
-    fun subscribe(id: Any, listener: (Settings) -> Unit) {
-        settingsNotifier.subscribe(id, listener)
-    }
-
-    fun unsubscribe(id: Any) {
-        settingsNotifier.unsubscribe(id)
     }
 
     private fun handleNewSettings(newSettings: Settings) {
