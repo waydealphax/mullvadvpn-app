@@ -22,7 +22,6 @@ use winapi::{
 };
 use winreg::{enums::HKEY_LOCAL_MACHINE, RegKey};
 
-
 type WintunOpenAdapterFn =
     unsafe extern "stdcall" fn(pool: *const u16, name: *const u16) -> RawHandle;
 
@@ -40,7 +39,6 @@ type WintunDeleteAdapterFn = unsafe extern "stdcall" fn(
     force_close_sessions: BOOL,
     reboot_required: *mut BOOL,
 ) -> BOOL;
-
 
 pub struct WintunDll {
     handle: HINSTANCE,

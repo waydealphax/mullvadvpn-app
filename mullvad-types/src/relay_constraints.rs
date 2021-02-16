@@ -12,7 +12,6 @@ use serde::{Deserialize, Serialize};
 use std::{collections::HashSet, fmt};
 use talpid_types::net::{openvpn::ProxySettings, TransportProtocol, TunnelType};
 
-
 pub trait Match<T> {
     fn matches(&self, other: &T) -> bool;
 }
@@ -259,7 +258,6 @@ impl fmt::Display for RelayConstraints {
     }
 }
 
-
 /// Limits the set of [`crate::relay_list::Relay`]s used by a `RelaySelector` based on
 /// location.
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
@@ -459,7 +457,6 @@ impl Match<WireguardEndpointData> for WireguardConstraints {
     }
 }
 
-
 /// Specifies a specific endpoint or [`BridgeConstraints`] to use when `mullvad-daemon` selects a
 /// bridge server.
 #[derive(Debug, Clone, Eq, PartialEq, Deserialize, Serialize)]
@@ -469,7 +466,6 @@ pub enum BridgeSettings {
     Normal(BridgeConstraints),
     Custom(ProxySettings),
 }
-
 
 /// Limits the set of bridge servers to use in `mullvad-daemon`.
 #[derive(Debug, Default, Clone, Eq, PartialEq, Deserialize, Serialize)]

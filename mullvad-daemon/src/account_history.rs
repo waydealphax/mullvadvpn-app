@@ -38,7 +38,6 @@ pub struct AccountHistory {
     rpc_handle: MullvadRestHandle,
 }
 
-
 impl AccountHistory {
     pub async fn new(
         cache_dir: &Path,
@@ -247,7 +246,6 @@ impl AccountHistory {
                 })
             })
             .collect();
-
 
         futures::future::join_all(removal).await;
 

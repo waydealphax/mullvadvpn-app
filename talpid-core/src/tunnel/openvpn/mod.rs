@@ -57,7 +57,6 @@ use winreg::enums::{KEY_READ, KEY_WRITE};
 #[cfg(windows)]
 mod windows;
 
-
 #[cfg(windows)]
 lazy_static! {
     static ref WINTUN_DLL: Mutex<Option<Arc<windows::WintunDll>>> = Mutex::new(None);
@@ -92,7 +91,6 @@ const ADAPTER_GUID: GUID = GUID {
 const DEVICE_READY_TIMEOUT: Duration = Duration::from_secs(5);
 #[cfg(windows)]
 const DEVICE_CHECK_INTERVAL: Duration = Duration::from_millis(100);
-
 
 /// Results from fallible operations on the OpenVPN tunnel.
 pub type Result<T> = std::result::Result<T, Error>;
@@ -224,12 +222,10 @@ pub enum Error {
     ParseRemoteHost(#[error(source)] std::net::AddrParseError),
 }
 
-
 #[cfg(unix)]
 static OPENVPN_DIE_TIMEOUT: Duration = Duration::from_secs(4);
 #[cfg(windows)]
 static OPENVPN_DIE_TIMEOUT: Duration = Duration::from_secs(30);
-
 
 #[cfg(target_os = "macos")]
 const OPENVPN_PLUGIN_FILENAME: &str = "libtalpid_openvpn_plugin.dylib";
@@ -262,7 +258,6 @@ pub struct OpenVpnMonitor<C: OpenVpnBuilder = OpenVpnCommand> {
     #[cfg(windows)]
     wintun_adapter: Option<windows::TemporaryWintunAdapter>,
 }
-
 
 impl OpenVpnMonitor<OpenVpnCommand> {
     /// Creates a new `OpenVpnMonitor` with the given listener and using the plugin at the given
@@ -709,7 +704,6 @@ impl<C: OpenVpnBuilder + 'static> OpenVpnMonitor<C> {
         Ok(temp_file)
     }
 
-
     #[cfg(unix)]
     fn set_user_pass_file_permissions(file: &fs::File) -> io::Result<()> {
         use std::os::unix::fs::PermissionsExt;
@@ -866,7 +860,6 @@ impl ProcessHandle for OpenVpnProcHandle {
         self.nice_kill(OPENVPN_DIE_TIMEOUT)
     }
 }
-
 
 mod event_server {
     use futures::stream::TryStreamExt;
@@ -1097,7 +1090,6 @@ impl From<NL_DAD_STATE> for DadStateError {
         }
     }
 }
-
 
 #[cfg(test)]
 mod tests {

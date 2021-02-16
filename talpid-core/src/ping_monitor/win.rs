@@ -44,13 +44,11 @@ pub struct Pinger {
     seq: u16,
 }
 
-
 impl Pinger {
     pub fn new(addr: Ipv4Addr, _interface_name: String) -> Result<Self> {
         let sock = Socket::new(Domain::ipv4(), Type::raw(), Some(Protocol::icmpv4()))
             .map_err(Error::OpenError)?;
         sock.set_nonblocking(true).map_err(Error::OpenError)?;
-
 
         Ok(Self {
             sock,

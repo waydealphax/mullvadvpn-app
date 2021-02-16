@@ -53,7 +53,6 @@ const DBUS_UNKNOWN_METHOD: &str = "org.freedesktop.DBus.Error.UnknownMethod";
 const MINIMUM_SUPPORTED_MAJOR_VERSION: u32 = 1;
 const MINIMUM_SUPPORTED_MINOR_VERSION: u32 = 16;
 
-
 const NM_DEVICE_STATE_CHANGED: &'static str = "StateChanged";
 
 pub type Result<T> = std::result::Result<T, Error>;
@@ -93,7 +92,6 @@ pub enum Error {
     #[error(display = "Failed to get devices from NetworkManager object")]
     ObtainDevices,
 }
-
 
 pub type VariantRefArg = Variant<Box<dyn RefArg>>;
 pub type VariantMap = HashMap<String, VariantRefArg>;
@@ -174,7 +172,6 @@ impl NetworkManager {
             .get(NM_CONNECTION_ACTIVE, "Devices")
             .map_err(Error::Dbus)?;
         let device_path = device_paths.into_iter().next().ok_or(Error::NoDevice)?;
-
 
         Ok(WireguardTunnel {
             config_path,
@@ -420,7 +417,6 @@ impl NetworkManager {
         let device_path = self.fetch_device(interface_name)?;
         self.wait_until_device_is_ready(&device_path)?;
 
-
         let device = self.as_path(&device_path);
         // Get the last applied connection
         let (mut settings, version_id): (
@@ -612,7 +608,6 @@ impl NetworkManager {
         Err(Error::DeviceNotFound)
     }
 
-
     pub fn convert_address_to_dbus(address: &IpAddr) -> VariantMap {
         let mut map: VariantMap = HashMap::new();
         map.insert(
@@ -665,7 +660,6 @@ impl WireguardTunnel {
     }
 }
 
-
 pub fn device_is_ready(device_state: u32) -> bool {
     /// Any state above `NM_DEVICE_STATE_IP_CONFIG` is considered to be an OK state to change the
     /// DNS config. For the enums, see https://developer.gnome.org/NetworkManager/stable/nm-dbus-types.html#NMDeviceState
@@ -683,7 +677,6 @@ fn verify_etc_resolv_conf_contents() -> bool {
     let actual_resolv_conf = "/etc/resolv.conf";
     eq_file_content(&expected_resolv_conf, &actual_resolv_conf)
 }
-
 
 fn eq_file_content<P: AsRef<Path>>(a: &P, b: &P) -> bool {
     let file_a = match File::open(a).map(BufReader::new) {

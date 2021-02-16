@@ -97,7 +97,6 @@ impl HttpsConnectorWithSni {
         cert_store
     }
 
-
     /// Set a channel to register sockets with the request service.
     pub(crate) fn set_service_tx(&mut self, service_tx: mpsc::Sender<RequestCommand>) {
         self.service_tx = Some(service_tx);
@@ -160,7 +159,6 @@ impl HttpsConnectorWithSni {
         }
     }
 
-
     fn parse_addr(hostname: &str) -> Option<SocketAddr> {
         if let Ok(addr) = hostname.parse::<SocketAddr>() {
             return Some(addr);
@@ -175,7 +173,6 @@ impl fmt::Debug for HttpsConnectorWithSni {
         f.debug_struct("HttpsConnectorWithSni").finish()
     }
 }
-
 
 impl Service<Uri> for HttpsConnectorWithSni {
     type Response = MaybeHttpsStream<TcpStream>;
@@ -228,7 +225,6 @@ impl Service<Uri> for HttpsConnectorWithSni {
 
             let (socket_shutdown_tx, socket_shutdown_rx) = oneshot::channel();
 
-
             let (tcp_stream, socket_handle) =
                 TcpStream::new(tokio_connection, socket_id, Some(socket_shutdown_tx));
             if let Some(mut service_tx) = service_tx {
@@ -251,17 +247,14 @@ impl Service<Uri> for HttpsConnectorWithSni {
                 });
             }
 
-
             let tls_connection = tls_connector.connect(host, tcp_stream).await?;
 
             Ok(MaybeHttpsStream::Https(tls_connection))
         };
 
-
         Box::pin(fut)
     }
 }
-
 
 #[cfg(test)]
 mod test {

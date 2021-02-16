@@ -14,7 +14,6 @@ use winreg::{
 mod system_state;
 use self::system_state::SystemStateWriter;
 
-
 const DNS_STATE_FILENAME: &'static str = "dns-state-backup";
 const DNS_CACHE_POLICY_GUID: &str = "{d57d2750-f971-408e-8e55-cfddb37e60ae}";
 
@@ -231,7 +230,6 @@ fn is_minimum_windows10() -> bool {
 ffi_error!(InitializationResult, Error::Initialization);
 ffi_error!(DeinitializationResult, Error::Deinitialization);
 ffi_error!(SettingResult, Error::Setting);
-
 
 #[allow(non_snake_case)]
 extern "stdcall" {

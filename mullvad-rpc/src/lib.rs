@@ -17,7 +17,6 @@ use std::{
 };
 use talpid_types::{net::wireguard, ErrorExt};
 
-
 pub mod rest;
 
 mod https_client_with_sni;
@@ -42,7 +41,6 @@ const API_HOST: &str = "api.mullvad.net";
 pub const API_IP_CACHE_FILENAME: &str = "api-ip-address.txt";
 const API_IP: IpAddr = IpAddr::V4(Ipv4Addr::new(193, 138, 218, 78));
 const API_ADDRESS: (IpAddr, u16) = (crate::API_IP, 443);
-
 
 /// A type that helps with the creation of RPC connections.
 pub struct MullvadRpcRuntime {
@@ -374,14 +372,12 @@ impl AppVersionProxy {
     }
 }
 
-
 /// Error code for when an account has too many keys. Returned when trying to push a new key.
 pub const KEY_LIMIT_REACHED: &str = "KEY_LIMIT_REACHED";
 #[derive(Clone)]
 pub struct WireguardKeyProxy {
     handle: rest::MullvadRestHandle,
 }
-
 
 impl WireguardKeyProxy {
     pub fn new(handle: rest::MullvadRestHandle) -> Self {

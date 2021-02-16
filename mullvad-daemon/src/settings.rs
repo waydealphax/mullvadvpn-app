@@ -11,9 +11,7 @@ use std::{
 };
 use talpid_types::ErrorExt;
 
-
 const SETTINGS_FILE: &str = "settings.json";
-
 
 #[derive(err_derive::Error, Debug)]
 pub enum Error {
@@ -43,7 +41,6 @@ enum LoadSettingsError {
     #[error(display = "Failed to restore Windows update backup")]
     WinMigrationError(#[error(source)] windows::Error),
 }
-
 
 #[derive(Debug)]
 pub struct SettingsPersister {
@@ -273,7 +270,6 @@ impl Deref for SettingsPersister {
         &self.settings
     }
 }
-
 
 #[cfg(windows)]
 mod windows {

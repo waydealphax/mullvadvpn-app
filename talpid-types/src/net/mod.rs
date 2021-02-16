@@ -20,7 +20,6 @@ pub enum TunnelParameters {
     Wireguard(wireguard::TunnelParameters),
 }
 
-
 impl TunnelParameters {
     pub fn get_tunnel_endpoint(&self) -> TunnelEndpoint {
         match self {
@@ -124,7 +123,6 @@ impl fmt::Display for TunnelEndpoint {
     }
 }
 
-
 /// Represents a network layer IP address together with the transport layer protocol and port.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(target_os = "android", derive(IntoJava))]
@@ -188,7 +186,6 @@ impl fmt::Display for TransportProtocol {
         }
     }
 }
-
 
 /// Returned when `TransportProtocol::from_str` fails to convert a string into a
 /// [`TransportProtocol`] object.

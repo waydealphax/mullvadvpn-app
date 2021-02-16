@@ -23,7 +23,6 @@ use super::connecting_state::TunnelCloseEvent;
 
 pub(crate) type TunnelEventsReceiver = Fuse<mpsc::UnboundedReceiver<TunnelEvent>>;
 
-
 pub struct ConnectedStateBootstrap {
     pub metadata: TunnelMetadata,
     pub tunnel_events: TunnelEventsReceiver,

@@ -96,7 +96,6 @@ pub async fn spawn_monitor(sender: Weak<UnboundedSender<TunnelCommand>>) -> Resu
         _stop_connection_tx: stop_connection_tx,
     };
 
-
     tokio::spawn(async move {
         while let Some(_new_message) = messages.next().await {
             match sender.upgrade() {
@@ -112,10 +111,8 @@ pub async fn spawn_monitor(sender: Weak<UnboundedSender<TunnelCommand>>) -> Resu
         }
     });
 
-
     Ok(monitor_handle)
 }
-
 
 async fn public_ip_unreachable(handle: &Handle) -> Result<bool> {
     let mut request = handle.route().get(IpVersion::V4);

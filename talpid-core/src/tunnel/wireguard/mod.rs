@@ -47,7 +47,6 @@ pub enum Error {
     ConnectivityMonitorError(#[error(source)] connectivity_check::Error),
 }
 
-
 /// Spawns and monitors a wireguard tunnel
 pub struct WireguardMonitor {
     /// Tunnel implementation

@@ -457,7 +457,6 @@ impl StoppableProcess for OpenVpnProcHandle {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::OpenVpnCommand;

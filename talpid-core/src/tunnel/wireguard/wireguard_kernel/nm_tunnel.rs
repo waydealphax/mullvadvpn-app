@@ -12,7 +12,6 @@ use talpid_dbus::{
 };
 use talpid_types::ErrorExt;
 
-
 #[derive(err_derive::Error, Debug)]
 pub enum Error {
     #[error(display = "Error while communicating over Dbus")]
@@ -30,7 +29,6 @@ pub struct NetworkManagerTunnel {
     tunnel: Option<WireguardTunnel>,
 }
 
-
 impl NetworkManagerTunnel {
     pub fn new(config: &Config) -> std::result::Result<Self, WgKernelError> {
         let network_manager = NetworkManager::new()
@@ -44,7 +42,6 @@ impl NetworkManagerTunnel {
         network_manager
             .set_stats_refresh_rate(&tunnel, INITIAL_TRAFFIC_STATS_REFRESH_RATE_MS)
             .map_err(|err| WgKernelError::NetworkManager(err.into()))?;
-
 
         Ok(NetworkManagerTunnel {
             network_manager,
@@ -131,7 +128,6 @@ fn convert_config_to_dbus(config: &Config) -> DeviceConfig {
             .map(ToString::to_string)
             .collect::<Vec<_>>();
 
-
         peer_config.insert("allowed-ips".into(), Variant(Box::new(allowed_ips)));
         peer_config.insert(
             "endpoint".into(),
@@ -156,7 +152,6 @@ fn convert_config_to_dbus(config: &Config) -> DeviceConfig {
         Variant(Box::new(MULLVAD_INTERFACE_NAME.to_string())),
     );
     connection_config.insert("autoconnect".into(), Variant(Box::new(true)));
-
 
     let ipv4_addrs: Vec<_> = config
         .tunnel
@@ -188,7 +183,6 @@ fn convert_config_to_dbus(config: &Config) -> DeviceConfig {
         ipv6_config.insert("ignore-auto-dns".into(), Variant(Box::new(true)));
         ipv6_config.insert("may-fail".into(), Variant(Box::new(true)));
     }
-
 
     let mut settings = HashMap::new();
     settings.insert("ipv4".into(), ipv4_config);

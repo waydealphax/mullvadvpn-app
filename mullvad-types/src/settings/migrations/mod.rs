@@ -3,7 +3,6 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::io::Read;
 mod v1;
 
-
 #[derive(Debug, PartialEq, Clone, Copy)]
 #[repr(u32)]
 pub enum SettingsVersion {
@@ -34,7 +33,6 @@ impl Serialize for SettingsVersion {
     }
 }
 
-
 #[derive(Debug)]
 enum VersionedSettings {
     V1(v1::Settings),
@@ -52,7 +50,6 @@ impl VersionedSettings {
         }
     }
 }
-
 
 trait SettingsMigration {
     fn read(&self, reader: &mut dyn Read) -> Result<VersionedSettings>;

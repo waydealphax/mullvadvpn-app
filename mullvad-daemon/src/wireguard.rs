@@ -119,7 +119,6 @@ impl KeyManager {
             .map_err(Self::map_rpc_error)
     }
 
-
     /// Replace a key for an account synchronously
     pub async fn replace_key(
         &mut self,
@@ -151,7 +150,6 @@ impl KeyManager {
             }
         }
     }
-
 
     /// Generate a new private key asynchronously. The new keys will be sent to the daemon channel.
     pub async fn spawn_key_generation_task(
@@ -192,7 +190,6 @@ impl KeyManager {
             }
         };
 
-
         let retry_strategy = Jittered::jitter(
             ExponentialBackoff::from_millis(300).max_delay(Duration::from_secs(60 * 60)),
         );
@@ -206,7 +203,6 @@ impl KeyManager {
 
         let upload_future =
             retry_future_with_backoff(future_generator, should_retry, retry_strategy);
-
 
         let (cancellable_upload, abort_handle) = abortable(Box::pin(upload_future));
         let daemon_tx = self.daemon_tx.clone();
@@ -225,11 +221,9 @@ impl KeyManager {
             }
         };
 
-
         tokio::spawn(Box::pin(future));
         self.current_job = Some(abort_handle);
     }
-
 
     fn push_future_generator(
         &self,
@@ -260,7 +254,6 @@ impl KeyManager {
             };
         Box::new(push_future)
     }
-
 
     async fn replace_key_rpc(
         http_handle: MullvadRestHandle,

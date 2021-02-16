@@ -3,7 +3,6 @@ use super::{
     MULLVAD_INTERFACE_NAME,
 };
 
-
 pub struct NetlinkTunnel {
     interface_index: u32,
     netlink_connections: Handle,
@@ -37,7 +36,6 @@ impl NetlinkTunnel {
                 }
                 return Err(err);
             }
-
 
             Ok(tunnel)
         })

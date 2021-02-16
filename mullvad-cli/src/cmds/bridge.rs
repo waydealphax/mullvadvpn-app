@@ -64,7 +64,6 @@ fn create_bridge_set_subcommand() -> clap::App<'static, 'static> {
         ))
 }
 
-
 fn create_set_custom_settings_subcommand() -> clap::App<'static, 'static> {
     clap::SubCommand::with_name("custom")
         .about("Configure a SOCKS5 proxy")

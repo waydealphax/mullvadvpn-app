@@ -186,7 +186,6 @@ impl RelaySelector {
             Box::new(on_update),
         );
 
-
         RelaySelector {
             parsed_relays,
             rng: rand::thread_rng(),
@@ -263,7 +262,6 @@ impl RelaySelector {
             } else {
                 (Constraint::Any, TransportProtocol::Tcp, TunnelType::OpenVpn)
             };
-
 
         let mut relay_constraints = original_constraints.clone();
         relay_constraints.openvpn_constraints = Default::default();
@@ -402,7 +400,6 @@ impl RelaySelector {
                 return (preferred_port, preferred_protocol, TunnelType::OpenVpn);
             }
 
-
             // Try out WireGuard in the first two connection attempts, first with any port,
             // afterwards on port 53. Afterwards, connect through OpenVPN alternating between UDP
             // on any port twice and TCP on port 443 once.
@@ -430,7 +427,6 @@ impl RelaySelector {
             let (preferred_port, preferred_protocol) =
                 Self::preferred_openvpn_constraints(retry_attempt);
 
-
             (preferred_port, preferred_protocol, TunnelType::OpenVpn)
         }
     }
@@ -446,7 +442,6 @@ impl RelaySelector {
             _ => (Constraint::Any, TransportProtocol::Tcp),
         }
     }
-
 
     /// Returns a random relay endpoint if any is matching the given constraints.
     fn get_tunnel_endpoint_internal(
@@ -482,7 +477,6 @@ impl RelaySelector {
         if !constraints.providers.matches(&relay) {
             return None;
         }
-
 
         let relay = match constraints.tunnel_protocol {
             Constraint::Any => {
@@ -523,7 +517,6 @@ impl RelaySelector {
                 relay
             }
         };
-
 
         let relay_matches = match constraints.tunnel_protocol {
             Constraint::Any => {

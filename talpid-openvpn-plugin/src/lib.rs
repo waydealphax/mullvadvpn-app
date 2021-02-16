@@ -7,7 +7,6 @@ use talpid_types::ErrorExt;
 mod processing;
 use crate::processing::EventProcessor;
 
-
 #[derive(err_derive::Error, Debug)]
 #[error(no_from)]
 pub enum Error {
@@ -29,7 +28,6 @@ pub enum Error {
     #[error(display = "Unable to parse arguments from OpenVPN")]
     ParseArgsFailed(#[error(source)] std::str::Utf8Error),
 }
-
 
 /// All the OpenVPN events this plugin will register for listening to. Edit this variable to change
 /// events.
@@ -78,7 +76,6 @@ fn parse_args(args: &[CString]) -> Result<Arguments, Error> {
 
     Ok(Arguments { ipc_socket_path })
 }
-
 
 fn openvpn_close(_handle: Mutex<EventProcessor>) {
     log::info!("Unloading plugin");

@@ -44,7 +44,6 @@ const PLATFORM: &str = "windows";
 #[cfg(target_os = "android")]
 const PLATFORM: &str = "android";
 
-
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 struct CachedAppVersionInfo {
     #[serde(flatten)]
@@ -79,7 +78,6 @@ pub enum Error {
     #[error(display = "Clearing version check cache due to a version mismatch")]
     CacheVersionMismatch,
 }
-
 
 pub(crate) struct VersionUpdater {
     version_proxy: AppVersionProxy,

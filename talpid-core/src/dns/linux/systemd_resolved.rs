@@ -184,7 +184,6 @@ impl SystemdResolved {
         }
     }
 
-
     fn as_manager_object(&self) -> Proxy<'_, &SyncConnection> {
         Proxy::new(
             RESOLVED_BUS,

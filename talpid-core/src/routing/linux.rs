@@ -31,7 +31,6 @@ use rtnetlink::{
 
 use libc::{AF_INET, AF_INET6};
 
-
 lazy_static! {
     static ref SUPPRESS_RULE_V4: RuleMessage = RuleMessage {
         header: RuleHeader {
@@ -74,7 +73,6 @@ lazy_static! {
     ];
 }
 
-
 pub type Result<T> = std::result::Result<T, Error>;
 
 /// Errors that can happen in the Linux routing integration
@@ -109,7 +107,6 @@ pub enum Error {
     #[error(display = "Shutting down route manager")]
     Shutdown,
 }
-
 
 pub struct RouteManagerImpl {
     handle: Handle,
@@ -284,7 +281,6 @@ impl RouteManagerImpl {
         Ok(link_map)
     }
 
-
     fn find_iface_idx(&self, iface_name: &str) -> Option<u32> {
         self.iface_map
             .iter()
@@ -304,7 +300,6 @@ impl RouteManagerImpl {
             }
         }
     }
-
 
     pub(crate) async fn run(
         mut self,
@@ -397,7 +392,6 @@ impl RouteManagerImpl {
             }
         };
 
-
         // By default, the prefix is unspecified.
         let mut prefix = IpNetwork::new(
             if is_ipv4 {
@@ -466,7 +460,6 @@ impl RouteManagerImpl {
         if device.is_none() && node_addr.is_none() && gateway.is_none() {
             return Err(Error::InvalidRoute);
         }
-
 
         let node = Node {
             ip: node_addr.or(gateway.into()),
@@ -727,7 +720,6 @@ impl NetworkInterface {
 mod test {
     use super::*;
     use std::collections::HashSet;
-
 
     /// Tests if dropping inside a tokio runtime panics
     #[test]

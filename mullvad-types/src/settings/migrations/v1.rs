@@ -11,7 +11,6 @@ use serde::{Deserialize, Serialize};
 use std::io::Read;
 use talpid_types::net::TunnelType;
 
-
 /// Mullvad daemon settings.
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(default)]
@@ -291,7 +290,6 @@ mod test {
             .expect("Failed to deserialize old format");
 
         let new_settings = serde_json::from_str(&NEW_SETTINGS).unwrap();
-
 
         assert_eq!(&m.migrate(old_settings).unwrap(), &new_settings);
     }

@@ -4,7 +4,6 @@
 #[macro_use]
 extern crate serde;
 
-
 pub mod account_history;
 pub mod exception_logging;
 mod geoip;
@@ -556,7 +555,6 @@ where
             &cache_dir,
         );
 
-
         let mut settings = SettingsPersister::load(&settings_dir);
 
         if version::is_beta_version() {
@@ -610,7 +608,6 @@ where
         let tunnel_parameters_generator = MullvadTunnelParametersGenerator {
             tx: internal_event_tx.clone(),
         };
-
 
         let initial_target_state = if settings.get_account_token().is_some() {
             if settings.auto_connect {
@@ -794,7 +791,6 @@ where
         )
     }
 
-
     async fn handle_event(&mut self, event: InternalDaemonEvent) {
         use self::InternalDaemonEvent::*;
         match event {
@@ -838,7 +834,6 @@ where
             }
             TunnelStateTransition::Error(error_state) => TunnelState::Error(error_state),
         };
-
 
         self.unschedule_reconnect();
 
@@ -1082,7 +1077,6 @@ where
             job.abort();
         }
     }
-
 
     async fn handle_command(&mut self, command: DaemonCommand) {
         use self::DaemonCommand::*;
@@ -1550,7 +1544,6 @@ where
     async fn on_factory_reset(&mut self, tx: ResponseTx<(), Error>) {
         let mut last_error = Ok(());
 
-
         if let Err(e) = self.settings.reset() {
             log::error!("Failed to reset settings - {}", e);
             last_error = Err(Error::ClearSettingsError(e));
@@ -1808,7 +1801,6 @@ where
         };
         Self::oneshot_send(tx, result, "on_set_bridge_state response");
     }
-
 
     fn on_set_enable_ipv6(&mut self, tx: ResponseTx<(), settings::Error>, enable_ipv6: bool) {
         let save_result = self.settings.set_enable_ipv6(enable_ipv6);
@@ -2227,7 +2219,6 @@ where
                             let entry = entry.map_err(Error::FileEntryError)?;
                             let entry_type = entry.file_type().map_err(Error::FileTypeError)?;
 
-
                             let removal = if entry_type.is_file() || entry_type.is_symlink() {
                                 fs::remove_file(entry.path())
                             } else {
@@ -2241,7 +2232,6 @@ where
                 })
         }
     }
-
 
     pub fn shutdown_handle(&self) -> DaemonShutdownHandle {
         DaemonShutdownHandle {

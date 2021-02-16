@@ -9,7 +9,6 @@ use self::{
 };
 use std::{env, fmt, net::IpAddr, path::Path};
 
-
 const RESOLV_CONF_PATH: &str = "/etc/resolv.conf";
 
 pub type Result<T> = std::result::Result<T, Error>;
