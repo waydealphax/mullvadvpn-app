@@ -39,9 +39,9 @@ esac
 time cargo build --locked --verbose
 time cargo test --locked --verbose
 
-if [[ "${RUST_TOOLCHAIN_CHANNEL}" == "nightly" && "$(uname -s)" == "Linux" ]]; then
+if [[ "${RUST_TOOLCHAIN_CHANNEL}" == "stable" && "$(uname -s)" == "Linux" ]]; then
   rustfmt --version;
-  cargo fmt -- --check --unstable-features;
+  cargo fmt -- --check;
 fi
 
 if ! git diff-index --quiet HEAD; then
