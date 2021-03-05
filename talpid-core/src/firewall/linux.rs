@@ -91,7 +91,10 @@ enum End {
 }
 
 /// The Linux implementation for the firewall and DNS.
-pub struct Firewall(());
+pub struct Firewall {
+    old_src_valid_mark_ipv4: Option<Vec<u8>>,
+    old_src_valid_mark_ipv6: Option<Vec<u8>>,
+}
 
 struct FirewallTables {
     main: Table,
@@ -103,7 +106,10 @@ impl FirewallT for Firewall {
     type Error = Error;
 
     fn new(_args: FirewallArguments) -> Result<Self> {
-        Ok(Firewall(()))
+        Ok(Firewall {
+            old_src_valid_mark_ipv4: None,
+            old_src_valid_mark_ipv6: None,
+        })
     }
 
     fn apply_policy(&mut self, policy: FirewallPolicy) -> Result<()> {
@@ -114,10 +120,13 @@ impl FirewallT for Firewall {
         };
         let batch = PolicyBatch::new(&tables).finalize(&policy)?;
         self.send_and_process(&batch)?;
-        self.verify_tables(&[&TABLE_NAME, &MANGLE_TABLE_NAME_V4, &MANGLE_TABLE_NAME_V6])
+        self.verify_tables(&[&TABLE_NAME, &MANGLE_TABLE_NAME_V4, &MANGLE_TABLE_NAME_V6])?;
+        self.set_sysctl(&policy);
+        Ok(())
     }
 
     fn reset_policy(&mut self) -> Result<()> {
+        self.reset_sysctl();
         let tables = [
             Table::new(&*TABLE_NAME, ProtoFamily::Inet),
             Table::new(&*MANGLE_TABLE_NAME_V4, ProtoFamily::Ipv4),
@@ -139,6 +148,32 @@ impl FirewallT for Firewall {
 }
 
 impl Firewall {
+    fn set_sysctl(&mut self, policy: &FirewallPolicy) {
+        if self.old_src_valid_mark_ipv6.is_none() && self.old_src_valid_mark_ipv4.is_none() {
+            match policy {
+                FirewallPolicy::Connected { .. } | FirewallPolicy::Connecting { .. } => {
+                    match crate::linux::set_src_valid_mark_sysctl() {
+                        Ok((ipv4, ipv6)) => {
+                            self.old_src_valid_mark_ipv4 = ipv4;
+                            self.old_src_valid_mark_ipv6 = ipv6;
+                        }
+                        Err(err) => {
+                            log::error!("Failed to set 'src_valid_mark': {}", err);
+                        }
+                    };
+                }
+                _ => (),
+            }
+        };
+    }
+
+    fn reset_sysctl(&mut self) {
+        crate::linux::reset_src_valid_mark_syscetl(
+            self.old_src_valid_mark_ipv4.take(),
+            self.old_src_valid_mark_ipv6.take(),
+        );
+    }
+
     fn send_and_process(&self, batch: &FinalizedBatch) -> Result<()> {
         let socket = mnl::Socket::new(mnl::Bus::Netfilter).map_err(Error::NetlinkOpenError)?;
         socket.send_all(batch).map_err(Error::NetlinkSendError)?;
