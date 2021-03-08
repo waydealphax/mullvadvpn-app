@@ -1,5 +1,4 @@
 use crate::{new_rpc_client, Command, Error, Result};
-use clap::value_t_or_exit;
 use mullvad_management_interface::{types::Timestamp, Code};
 use mullvad_types::account::AccountToken;
 
@@ -47,7 +46,8 @@ impl Command for Account {
                     .arg(
                         clap::Arg::with_name("voucher")
                             .help("The Mullvad voucher code to be submitted")
-                            .required(true),
+                            .required(true)
+                            .multiple(true),
                     ),
             )
     }
@@ -65,8 +65,8 @@ impl Command for Account {
         } else if let Some(_matches) = matches.subcommand_matches("create") {
             self.create().await
         } else if let Some(matches) = matches.subcommand_matches("redeem") {
-            let voucher = value_t_or_exit!(matches.value_of("voucher"), String);
-            self.redeem_voucher(voucher).await
+            let voucher = clap::values_t_or_exit!(matches.values_of("voucher"), String);
+            self.redeem_voucher(voucher.join("")).await
         } else {
             unreachable!("No account command given");
         }
