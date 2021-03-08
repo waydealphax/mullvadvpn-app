@@ -21,6 +21,7 @@ impl Command for Account {
                     .arg(
                         clap::Arg::with_name("token")
                             .help("The Mullvad account token to configure the client with")
+                            .multiple(true)
                             .required(true),
                     ),
             )
@@ -53,8 +54,8 @@ impl Command for Account {
 
     async fn run(&self, matches: &clap::ArgMatches<'_>) -> Result<()> {
         if let Some(set_matches) = matches.subcommand_matches("set") {
-            let token = value_t_or_exit!(set_matches.value_of("token"), String);
-            self.set(Some(token)).await
+            let token = clap::values_t_or_exit!(set_matches.values_of("token"), String);
+            self.set(Some(token.join(""))).await
         } else if let Some(_matches) = matches.subcommand_matches("get") {
             self.get().await
         } else if let Some(_matches) = matches.subcommand_matches("unset") {
