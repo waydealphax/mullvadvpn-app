@@ -46,10 +46,6 @@ pub enum Error {
     #[error(display = "Tunnel failed")]
     TunnelError(#[error(source)] TunnelError),
 
-    /// Failed to set up tokio runtime
-    #[error(display = "Failed to start tokio runtime")]
-    TokioRuntimeError(#[error(source)] std::io::Error),
-
     /// Failed to set up Udp2Tcp
     #[error(display = "Failed to start UDP-over-TCP proxy")]
     Udp2TcpError(#[error(source)] udp_over_tcp::udp2tcp::ConnectError),
@@ -66,7 +62,6 @@ pub enum Error {
 
 /// Spawns and monitors a wireguard tunnel
 pub struct WireguardMonitor {
-    _runtime: Option<tokio1::runtime::Runtime>,
     /// Tunnel implementation
     tunnel: Arc<Mutex<Option<Box<dyn Tunnel>>>>,
     /// Callback to signal tunnel events
@@ -95,7 +90,7 @@ struct TcpProxy {
 }
 
 impl TcpProxy {
-    pub fn new(runtime: &tokio1::runtime::Runtime, endpoint: SocketAddr) -> Result<Self> {
+    pub fn new(runtime: &tokio::runtime::Handle, endpoint: SocketAddr) -> Result<Self> {
         let listen_addr = if endpoint.is_ipv4() {
             SocketAddr::new("127.0.0.1".parse().unwrap(), 0)
         } else {
@@ -106,7 +101,7 @@ impl TcpProxy {
             .block_on(Udp2Tcp::new(
                 listen_addr,
                 endpoint,
-                Some(TcpOptions {
+                Some(&TcpOptions {
                     #[cfg(target_os = "linux")]
                     fwmark: Some(crate::linux::TUNNEL_FW_MARK),
                     ..TcpOptions::default()
@@ -141,7 +136,7 @@ impl Drop for TcpProxy {
 impl WireguardMonitor {
     /// Starts a WireGuard tunnel with the given config
     pub fn start<F: Fn(TunnelEvent) + Send + Sync + Clone + 'static>(
-        _runtime: tokio::runtime::Handle,
+        runtime: tokio::runtime::Handle,
         mut config: Config,
         log_path: Option<&Path>,
         on_event: F,
@@ -150,20 +145,9 @@ impl WireguardMonitor {
     ) -> Result<WireguardMonitor> {
         let mut tcp_proxies = vec![];
 
-        // TODO: Use a shared tokio 1.0 runtime when rest of daemon is upgraded
-        let mut runtime = None;
-
         for peer in &mut config.peers {
             if peer.protocol == TransportProtocol::Tcp {
-                if runtime.is_none() {
-                    let runtime_inner = tokio1::runtime::Builder::new_multi_thread()
-                        .enable_all()
-                        .build()
-                        .map_err(Error::TokioRuntimeError)?;
-                    runtime = Some(runtime_inner);
-                }
-
-                let udp2tcp = TcpProxy::new(runtime.as_ref().unwrap(), peer.endpoint.clone())?;
+                let udp2tcp = TcpProxy::new(&runtime, peer.endpoint.clone())?;
 
                 // Replace remote peer with proxy
                 peer.endpoint = udp2tcp.local_udp_addr();
@@ -192,7 +176,6 @@ impl WireguardMonitor {
         let (close_msg_sender, close_msg_receiver) = mpsc::channel();
         let (pinger_tx, pinger_rx) = mpsc::channel();
         let monitor = WireguardMonitor {
-            _runtime: runtime,
             tunnel: Arc::new(Mutex::new(Some(tunnel))),
             event_callback,
             close_msg_sender,
