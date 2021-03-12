@@ -49,7 +49,12 @@ pub struct PeerConfig {
     pub endpoint: SocketAddr,
     /// Transport protocol. WireGuard only supports UDP directly.
     /// If this is set to TCP, then traffic is proxied using [`udp_to_tcp::Udp2Tcp`].
+    #[serde(default = "default_peer_transport")]
     pub protocol: TransportProtocol,
+}
+
+fn default_peer_transport() -> TransportProtocol {
+    TransportProtocol::Udp
 }
 
 #[derive(Clone, Eq, PartialEq, Deserialize, Serialize, Debug)]
