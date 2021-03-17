@@ -100,6 +100,13 @@ export default class AppRenderer {
   private connectedToDaemon = false;
 
   constructor() {
+    console.log({
+      innerWidth: window.innerWidth,
+      outerWidth: window.outerWidth,
+      innerHeight: window.innerHeight,
+      outerHeight: window.outerHeight,
+    });
+
     log.addOutput(new ConsoleOutput(LogLevel.debug));
     log.addOutput(new IpcOutput(LogLevel.debug));
 
