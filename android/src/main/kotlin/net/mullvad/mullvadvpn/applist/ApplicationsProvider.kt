@@ -10,16 +10,16 @@ class ApplicationsProvider(
 ) {
     private val applicationFilterPredicate: (ApplicationInfo) -> Boolean = { appInfo ->
         hasInternetPermission(appInfo.packageName) &&
-            isLaunchable(appInfo.packageName) &&
+            hasLaunchIntent(appInfo.packageName) &&
             !isSelfApplication(appInfo.packageName)
     }
 
-    fun getAppsList(): List<AppData> {
+    fun getAppsList(): List<AppInfo> {
         return packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
             .asSequence()
             .filter(applicationFilterPredicate)
             .map { info ->
-                AppData(info.packageName, info.icon, info.loadLabel(packageManager).toString())
+                AppInfo(info.packageName, info.icon, info.loadLabel(packageManager).toString())
             }
             .toList()
     }
@@ -29,7 +29,7 @@ class ApplicationsProvider(
             packageManager.checkPermission(Manifest.permission.INTERNET, packageName)
     }
 
-    private fun isLaunchable(packageName: String): Boolean {
+    private fun hasLaunchIntent(packageName: String): Boolean {
         return packageManager.getLaunchIntentForPackage(packageName) != null
     }
 
