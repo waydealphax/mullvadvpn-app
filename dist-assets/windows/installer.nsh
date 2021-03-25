@@ -170,9 +170,10 @@
 
 	SetOutPath "$TEMP\mullvad-split-tunnel"
 
-	File "${BUILD_RESOURCES_DIR}\binaries\x86_64-pc-windows-msvc\split-tunnel\driver-package\*"
-
-	${IfNot} ${AtLeastWin10}
+	${If} ${AtLeastWin10}
+		File "${BUILD_RESOURCES_DIR}\binaries\x86_64-pc-windows-msvc\split-tunnel\win10\*"
+	${Else}
+		File "${BUILD_RESOURCES_DIR}\binaries\x86_64-pc-windows-msvc\split-tunnel\legacy\*"
 		File "${BUILD_RESOURCES_DIR}\binaries\x86_64-pc-windows-msvc\split-tunnel\meta\mullvad-ev.cer"
 	${EndIf}
 
@@ -376,11 +377,11 @@
 !define InstallService '!insertmacro "InstallService"'
 
 #
-# InstallSplitTunnelCert
+# InstallSplitTunnelDriverCert
 #
 # Install driver certificate in trusted publishers store
 #
-!macro InstallSplitTunnelCert
+!macro InstallSplitTunnelDriverCert
 
 	${IfNot} ${AtLeastWin10}
 		log::Log "Adding Split Tunnel driver certificate to certificate store"
@@ -397,7 +398,7 @@
 
 !macroend
 
-!define InstallSplitTunnelCert '!insertmacro "InstallSplitTunnelCert"'
+!define InstallSplitTunnelDriverCert '!insertmacro "InstallSplitTunnelDriverCert"'
 
 #
 # InstallSplitTunnelDriver
@@ -440,7 +441,7 @@
 
 	InstallSplitTunnelDriver_new_install:
 	
-	${InstallSplitTunnelCert}
+	${InstallSplitTunnelDriverCert}
 	
 	log::Log "Installing Split Tunneling driver"
 	nsExec::ExecToStack '"$TEMP\mullvad-split-tunnel\driverlogic.exe" st-new-install "$TEMP\mullvad-split-tunnel\mullvad-split-tunnel.inf"'
