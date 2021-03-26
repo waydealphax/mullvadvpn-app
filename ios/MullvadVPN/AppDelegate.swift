@@ -187,22 +187,19 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 extension AppDelegate: RootContainerViewControllerDelegate {
 
     func rootContainerViewControllerShouldShowSettings(_ controller: RootContainerViewController, navigateTo route: SettingsNavigationRoute?, animated: Bool) {
-        let settingsController = SettingsViewController(style: .grouped)
-        settingsController.settingsDelegate = self
-
-        let navController = SettingsNavigationController(navigationBarClass: CustomNavigationBar.self, toolbarClass: nil)
+        let navController = SettingsNavigationController()
+        navController.settingsDelegate = self
 
         if UIDevice.current.userInterfaceIdiom == .pad {
             navController.preferredContentSize = CGSize(width: 480, height: 568)
             navController.modalPresentationStyle = .formSheet
         }
 
-        navController.pushViewController(settingsController, animated: false)
-
         if let route = route {
-            settingsController.navigate(to: route)
+            navController.navigate(to: route, animated: animated)
         }
 
+        navController.presentationController?.delegate = navController
         controller.present(navController, animated: animated)
     }
 
@@ -237,9 +234,9 @@ extension AppDelegate: LoginViewControllerDelegate {
 
 }
 
-extension AppDelegate: SettingsViewControllerDelegate {
+extension AppDelegate: SettingsNavigationControllerDelegate {
 
-    func settingsViewController(_ controller: SettingsViewController, didFinishWithReason reason: SettingsDismissReason) {
+    func settingsNavigationController(_ controller: SettingsNavigationController, didFinishWithReason reason: SettingsDismissReason) {
         switch UIDevice.current.userInterfaceIdiom {
         case .phone:
             if case .userLoggedOut = reason {
